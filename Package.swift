@@ -11,15 +11,15 @@
 import PackageDescription
 
 let package = Package(
-	name: "FoundationCxx",
+	name: "SharedFoundationCxx",
 	products: [
 		.library(
-			name: "FoundationCxx",
-			targets: ["FoundationCxx"])
+			name: "SharedFoundationCxx",
+			targets: ["SharedFoundationCxx"])
 	],
 	targets: [
 		.target(
-			name: "FoundationCxx",
+			name: "SharedFoundationCxx",
 			path: ".",
 			exclude: [
 				"README.md",
