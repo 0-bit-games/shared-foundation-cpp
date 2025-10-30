@@ -370,13 +370,13 @@ bool String::contains(
 bool String::hasSuffix(
 	const String& other
 ) const {
-	return this->_storage.hasPrefix(other._storage);
+	return this->_storage.hasSuffix(other._storage);
 }
 
 bool String::hasPrefix(
 	const String& other
 ) const {
-	return this->_storage.hasSuffix(other._storage);
+	return this->_storage.hasPrefix(other._storage);
 }
 
 Strong<String> String::substring(
