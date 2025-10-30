@@ -414,6 +414,24 @@ namespace foundation::types {
 		}
 
 		template<typename R>
+		inline Strong<Array<R>> compactMap(const function<Strong<R>(T&, size_t)>& transform) const {
+			return reduce<Strong<Array<R>>>(Strong<Array<R>>(), [&transform](Strong<Array<R>> result, T& item, const size_t& idx) {
+				Strong<R> mapped = transform(item, idx);
+				if (!mapped.equals(nullptr)) {
+					result = result->appending(mapped);
+				}
+				return result;
+			});
+		}
+
+		template<typename R>
+		inline Strong<Array<R>> compactMap(const function<Strong<R>(T&)>& transform) const {
+			return compactMap<R>([&transform](T& item, size_t) {
+				return transform(item);
+			});
+		}
+
+		template<typename R>
 		inline Strong<Data<R>> mapToData(const function<R(T&, size_t)>& transform) const {
 			return reduce<Strong<Data<R>>>(
 				Strong<Data<R>>(),
