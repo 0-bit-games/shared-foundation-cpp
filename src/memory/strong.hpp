@@ -27,8 +27,6 @@ namespace foundation::memory {
 	template<typename T = Object>
 	class Strong : public Allocator {
 
-		static_assert(is_base_of<Object, T>::value);
-
 	private:
 
 		T* _object;
@@ -60,41 +58,72 @@ namespace foundation::memory {
 
 	public:
 
-		Strong(nullptr_t) : _object(nullptr) {};
+		Strong(nullptr_t) : _object(nullptr) {
+			static_assert(is_base_of<Object, T>::value);
+		};
+	
 		Strong(T& object) : Strong(&object) {};
 
 		Strong(const T& object) : Strong(nullptr) {
+
+			static_assert(is_base_of<Object, T>::value);
+
 			if constexpr (is_copy_constructible<T>::value) {
 				_setObject(new T(object), true);
 			} else {
 				_setObject(&(T&)object);
 			}
+
 		}
 
 		Strong(T* object) : _object(nullptr) {
+
+			static_assert(is_base_of<Object, T>::value);
+
 			_setObject(object);
+
 		}
 
 		explicit Strong(const T* object) : _object(nullptr) {
+
+			static_assert(is_base_of<Object, T>::value);
+
 			_setObject((T*)object);
+
 		}
 
 		Strong(const Strong<T>& other) : _object(nullptr) {
+
+			static_assert(is_base_of<Object, T>::value);
+
 			_setObject(other._object);
+
 		}
 
 		Strong(Strong<T>&& other) {
+
+			static_assert(is_base_of<Object, T>::value);
+
 			this->_object = other._object;
 			other._object = nullptr;
+
 		}
 
 		Strong(const Weak<T>& other) : _object(nullptr) {
+
+			static_assert(is_base_of<Object, T>::value);
+
 			_setObject(other);
+
 		}
 
 		template<typename... Args>
 		explicit Strong(Args&&... args) : _object(nullptr) {
+
+			static_assert(is_base_of<Object, T>::value);
+
 			_setObject(new T(std::forward<Args>(args)...), true);
+
 		}
 
 		~Strong() {

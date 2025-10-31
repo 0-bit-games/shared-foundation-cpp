@@ -25,8 +25,6 @@ namespace foundation::memory {
 	class Weak : public Allocator
 	{
 
-		static_assert(std::is_base_of<Object, T>::value);
-
 		friend class Object;
 
 	private:
@@ -43,21 +41,40 @@ namespace foundation::memory {
 		}
 
 	public:
-		Weak() : Weak(nullptr) {}
-		Weak(T& object) : Weak(&object) {}
+		Weak() : Weak(nullptr) {
+			static_assert(std::is_base_of<Object, T>::value);
+		}
+
+		Weak(T& object) : Weak(&object) {
+			static_assert(std::is_base_of<Object, T>::value);
+		}
 
 		Weak(T* object) : _object(nullptr) {
+
+			static_assert(std::is_base_of<Object, T>::value);
+
 			_setObject(object);
+
 		}
 
 		Weak(std::nullptr_t) : _object(nullptr) {
+
+			static_assert(std::is_base_of<Object, T>::value);
+
 			_setObject(nullptr);
+
 		}
 
-		Weak(const Strong<T>& other) : Weak(*other) {}
+		Weak(const Strong<T>& other) : Weak(*other) {
+			static_assert(std::is_base_of<Object, T>::value);
+		}
 
 		Weak(Weak<T>&& other) : _object(other._object) {
+
+			static_assert(std::is_base_of<Object, T>::value);
+
 			other._object = nullptr;
+
 		}
 
 		~Weak() {

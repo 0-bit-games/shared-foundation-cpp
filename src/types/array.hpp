@@ -30,8 +30,6 @@ namespace foundation::types {
 	template<typename T = Type>
 	class Array : public Type {
 
-		static_assert(std::is_base_of<Object, T>::value);
-
 		friend class Strong<Array<T>>;
 
 	public:
@@ -81,9 +79,13 @@ namespace foundation::types {
 		};
 
 		Array(const Data<T*>& other) : _storage(other) {
+
+			static_assert(std::is_base_of<Object, T>::value);
+
 			for (size_t idx = 0 ; idx < this->_storage.length() ; idx++) {
 				this->_storage[idx]->retain();
 			}
+
 		}
 
 		Storage _storage;
@@ -127,38 +129,64 @@ namespace foundation::types {
 			});
 		}
 
-		Array() : Type() {}
+		Array() : Type() {
+			static_assert(std::is_base_of<Object, T>::value);
+		}
 
-		Array(const Array<T>& other) : Array(other._storage) {}
+		Array(const Array<T>& other) : Array(other._storage) {
+			static_assert(std::is_base_of<Object, T>::value);
+		}
 
-		Array(Array&& other) : Type(), _storage(std::move(other._storage)) { }
+		Array(Array&& other) : Type(), _storage(std::move(other._storage)) {
+			static_assert(std::is_base_of<Object, T>::value);
+		}
 
 		Array(Strong<T> repeatedItem, size_t count = 1) : Array() {
+
+			static_assert(std::is_base_of<Object, T>::value);
+
 			for (size_t idx = 0 ; idx < count ; idx++) {
 				append(repeatedItem);
 			}
+
 		}
 
-		Array(const T& repeating, size_t count = 1) : Array(Strong<T>(repeating), count) {}
+		Array(const T& repeating, size_t count = 1) : Array(Strong<T>(repeating), count) {
+			static_assert(std::is_base_of<Object, T>::value);
+		}
 
 		Array(size_t count, T* items) : Array() {
+
+			static_assert(std::is_base_of<Object, T>::value);
+
 			for (size_t idx = 0 ; idx < count ; idx++) {
 				append(items[idx]);
 			}
+
 		}
 
-		Array(size_t capacity) : _storage(capacity) {}
+		Array(size_t capacity) : _storage(capacity) {
+			static_assert(std::is_base_of<Object, T>::value);
+		}
 
 		Array(std::initializer_list<Strong<T>> items) : Array() {
+	
+			static_assert(std::is_base_of<Object, T>::value);
+
 			for (Strong<T> item : items) {
 				append(item);
 			}
+
 		}
 
 		Array(std::initializer_list<T> items) : Array() {
+
+			static_assert(std::is_base_of<Object, T>::value);
+
 			for (Strong<T> item : items) {
 				append(item);
 			}
+
 		}
 
 		virtual ~Array() {

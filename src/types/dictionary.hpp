@@ -19,10 +19,6 @@ namespace foundation::types {
 	template<typename Key, class Value = Type>
 	class Dictionary : public Type {
 
-		static_assert(std::is_base_of<Object, Key>::value);
-		static_assert(std::is_base_of<Hashable, Key>::value);
-		static_assert(std::is_base_of<Object, Value>::value);
-
 	private:
 		Array<Key> _keys;
 		Array<Value> _values;
@@ -33,26 +29,56 @@ namespace foundation::types {
 			return Type::Kind::dictionary;
 		}
 
-		Dictionary() : Type(), _keys(), _values() {}
-		Dictionary(const Dictionary<Key,Value>& other) : Type(), _keys(other._keys), _values(other._values) {}
-		Dictionary(Dictionary<Key,Value>&& other) : Type(), _keys(std::move(other._keys)), _values(std::move(other._values)) {}
+		Dictionary() : Type(), _keys(), _values() {
+			static_assert(std::is_base_of<Object, Key>::value);
+			static_assert(std::is_base_of<Hashable, Key>::value);
+			static_assert(std::is_base_of<Object, Value>::value);
+		}
 
-		Dictionary(const Pair<Key, Value>& keyValue) : Type(), _keys({ keyValue.first }), _values({ keyValue.second }) {}
+		Dictionary(const Dictionary<Key,Value>& other) : Type(), _keys(other._keys), _values(other._values) {
+			static_assert(std::is_base_of<Object, Key>::value);
+			static_assert(std::is_base_of<Hashable, Key>::value);
+			static_assert(std::is_base_of<Object, Value>::value);
+		}
+		Dictionary(Dictionary<Key,Value>&& other) : Type(), _keys(std::move(other._keys)), _values(std::move(other._values)) {
+			static_assert(std::is_base_of<Object, Key>::value);
+			static_assert(std::is_base_of<Hashable, Key>::value);
+			static_assert(std::is_base_of<Object, Value>::value);
+		}
+
+		Dictionary(const Pair<Key, Value>& keyValue) : Type(), _keys({ keyValue.first }), _values({ keyValue.second }) {
+			static_assert(std::is_base_of<Object, Key>::value);
+			static_assert(std::is_base_of<Hashable, Key>::value);
+			static_assert(std::is_base_of<Object, Value>::value);
+		}
 
 		Dictionary(const Array<Pair<Key, Value>>& keyValues) : Type(), _keys(), _values() {
+
+			static_assert(std::is_base_of<Object, Key>::value);
+			static_assert(std::is_base_of<Hashable, Key>::value);
+			static_assert(std::is_base_of<Object, Value>::value);
+
 			_keys = keyValues.template map<Key>([](const Pair<Key, Value>& keyValue) {
 				return Strong<Key>(keyValue.first());
 			});
+
 			_values = keyValues.template map<Value>([](const Pair<Key, Value>& keyValue) {
 				return Strong<Value>(keyValue.second());
 			});
+
 		}
 
 		Dictionary(std::initializer_list<std::pair<Key&, Value&>> keyValues) : Type(), _keys(), _values() {
+
+			static_assert(std::is_base_of<Object, Key>::value);
+			static_assert(std::is_base_of<Hashable, Key>::value);
+			static_assert(std::is_base_of<Object, Value>::value);
+
 			for (auto keyValue : keyValues) {
 				_keys.append(keyValue.first);
 				_values.append(keyValue.second);
 			}
+
 		}
 
 		virtual ~Dictionary() {}

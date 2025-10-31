@@ -15,18 +15,26 @@ namespace foundation::types {
 	template<typename First, typename Second>
 	class Pair: public Type {
 
-		static_assert(std::is_base_of<Object, First>::value);
-		static_assert(std::is_base_of<Object, Second>::value);
-
 	public:
 
 		static Type::Kind typeKind() {
 			return Type::Kind::pair;
 		}
 
-		Pair(First& first, Second& second) : Type(), _first(first), _second(second) { }
-		Pair(const Pair<First, Second>& other) : Type(), _first(other._first), _second(other._second) { }
-		Pair(const std::pair<First&, Second&> pair) : Type(), _first(pair.first), _second(pair.second) { }
+		Pair(First& first, Second& second) : Type(), _first(first), _second(second) {
+			static_assert(std::is_base_of<Object, First>::value);
+			static_assert(std::is_base_of<Object, Second>::value);
+		}
+
+		Pair(const Pair<First, Second>& other) : Type(), _first(other._first), _second(other._second) {
+			static_assert(std::is_base_of<Object, First>::value);
+			static_assert(std::is_base_of<Object, Second>::value);
+		}
+
+		Pair(const std::pair<First&, Second&> pair) : Type(), _first(pair.first), _second(pair.second) {
+			static_assert(std::is_base_of<Object, First>::value);
+			static_assert(std::is_base_of<Object, Second>::value);
+		}
 
 		First& first() const {
 			return *_first;
