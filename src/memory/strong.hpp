@@ -159,9 +159,7 @@ namespace foundation::memory {
 		}
 
 		Strong<T>& operator =(Strong<T>&& other) {
-			this->_setObject(nullptr);
-			this->_object = other._object;
-			other._object = nullptr;
+			this->_setObject(other._object);
 			return *this;
 		}
 
