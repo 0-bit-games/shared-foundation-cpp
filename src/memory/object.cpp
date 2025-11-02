@@ -39,20 +39,6 @@ void Object::removeWeakReference(
 	}
 }
 
-Object::Object(
-) : _retainCount(0),
-	_weakReferences(nullptr),
-	_weakReferencesSize(0),
-	_weakReferencesCount(0) { }
-
-Object::Object(
-	const Object&
-) : Object() { }
-
-Object::Object(
-	Object&&
-) : Object() { }
-
 Object::~Object(
 ) {
 	assert(_retainCount == 0);
@@ -90,3 +76,17 @@ size_t Object::retainCount(
 ) const {
 	return this->_retainCount;
 }
+
+Object::Object(
+) : _retainCount(0),
+	_weakReferences(nullptr),
+	_weakReferencesSize(0),
+	_weakReferencesCount(0) { }
+
+Object::Object(
+	const Object&
+) : Object() { }
+
+Object::Object(
+	Object&&
+) : Object() { }

@@ -37,14 +37,6 @@ namespace foundation::memory {
 
 	public:
 
-		Object();
-
-		Object(
-			const Object&);
-
-		Object(
-			Object&&);
-
 		virtual ~Object();
 
 		Object& operator=(
@@ -53,12 +45,20 @@ namespace foundation::memory {
 		Object& operator=(
 			Object&&);
 
-	public:
-
 		void retain() const;
 		void release() const;
 
 		size_t retainCount() const;
+
+	protected:
+
+		Object();
+
+		Object(
+			const Object&);
+
+		Object(
+			Object&&);
 
 	};
 
