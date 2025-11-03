@@ -126,11 +126,11 @@ Strong<String> String::join(
 
 String::String(
 	const Data<uint32_t>& store
-) : _storage(store) { }
+) : _storage(store), _cachedUTF8CString(nullptr) { }
 
 String::String(
 	const uint32_t character
-) : _storage(&character, 1) { }
+) : _storage(&character, 1), _cachedUTF8CString(nullptr) { }
 
 String::String(
 	const String& other
@@ -138,7 +138,7 @@ String::String(
 
 String::String(
 	String&& other
-) : _storage(std::move(other._storage)) { }
+) : _storage(std::move(other._storage)), _cachedUTF8CString(nullptr) { }
 
 String::~String() { }
 
@@ -156,6 +156,13 @@ void String::print(
 	bool newLine
 ) const {
 	this->appending(newLine ? "\n" : "")->withCString(printf);
+}
+
+const char* String::cString() const {
+	if (_cachedUTF8CString.equals(nullptr)) {
+		_cachedUTF8CString = this->UTF8Data(true);
+	}
+	return (const char*)_cachedUTF8CString->items();
 }
 
 Strong<Data<uint8_t>> String::UTF8Data(
@@ -478,6 +485,7 @@ String& String::operator=(
 ) {
 	Type::operator=(other);
 	_storage = other._storage;
+	_cachedUTF8CString = nullptr;
 	return *this;
 }
 
