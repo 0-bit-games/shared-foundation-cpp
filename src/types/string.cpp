@@ -126,21 +126,34 @@ Strong<String> String::join(
 
 String::String(
 	const Data<uint32_t>& store
-) : _storage(store), _cachedUTF8CString(nullptr) { }
+) : _storage(store), _cString(nullptr) {
+	this->_invalidateCachedCString();
+}
 
 String::String(
 	const uint32_t character
-) : _storage(&character, 1), _cachedUTF8CString(nullptr) { }
+) : _storage(&character, 1), _cString(nullptr) {
+	this->_invalidateCachedCString();
+}
 
 String::String(
 	const String& other
-) : String(other._storage) { }
+) : String(other._storage) {
+	this->_invalidateCachedCString();
+}
 
 String::String(
 	String&& other
-) : _storage(std::move(other._storage)), _cachedUTF8CString(nullptr) { }
+) : _storage(std::move(other._storage)), _cString(nullptr) {
+	this->_invalidateCachedCString();
+}
 
-String::~String() { }
+String::~String() {
+	if (this->_cString != nullptr) {
+		free((void*)this->_cString);
+		this->_cString = nullptr;
+	}
+}
 
 size_t String::length() const {
 	return _storage.length();
@@ -159,10 +172,7 @@ void String::print(
 }
 
 const char* String::cString() const {
-	if (_cachedUTF8CString.equals(nullptr)) {
-		_cachedUTF8CString = this->UTF8Data(true);
-	}
-	return (const char*)_cachedUTF8CString->items();
+	return this->_cString;
 }
 
 Strong<Data<uint8_t>> String::UTF8Data(
@@ -190,12 +200,14 @@ void String::append(
 	const String& other
 )  {
 	_storage.append(other._storage);
+	_invalidateCachedCString();
 }
 
 void String::append(
 	uint32_t character
 ) {
 	_storage.append(character);
+	_invalidateCachedCString();
 }
 
 Strong<String> String::appending(
@@ -485,8 +497,20 @@ String& String::operator=(
 ) {
 	Type::operator=(other);
 	_storage = other._storage;
-	_cachedUTF8CString = nullptr;
+	_cString = nullptr;
 	return *this;
+}
+
+void String::_invalidateCachedCString() {
+
+	if (this->_cString != nullptr) {
+		free((void*)this->_cString);
+	}
+
+	Data<uint8_t> utf8Data = this->UTF8Data(true);
+	this->_cString = (const char*)malloc(utf8Data.length());
+	memcpy((void*)this->_cString, utf8Data.items(), utf8Data.length());
+
 }
 
 Data<uint32_t> String::_decodeUTF8(

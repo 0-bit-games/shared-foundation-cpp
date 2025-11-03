@@ -264,8 +264,10 @@ namespace foundation::types {
 			exponent
 		};
 
-		mutable Strong<Data<uint8_t>> _cachedUTF8CString;
 		DataValue<uint32_t> _storage;
+		const char* _cString;
+
+		void _invalidateCachedCString();
 
 		template<typename T>
 		static size_t _lengthWithoutNullTerminator(
