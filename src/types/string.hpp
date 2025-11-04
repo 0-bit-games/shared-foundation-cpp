@@ -116,8 +116,6 @@ namespace foundation::types {
 			bool newLine = true
 		) const;
 
-		const char* cString() const;
-
 		Strong<Data<uint8_t>> UTF8Data(
 			bool nullTerminate = false
 		) const;
@@ -265,9 +263,6 @@ namespace foundation::types {
 		};
 
 		DataValue<uint32_t> _storage;
-		const char* _cString;
-
-		void _invalidateCachedCString();
 
 		template<typename T>
 		static size_t _lengthWithoutNullTerminator(
