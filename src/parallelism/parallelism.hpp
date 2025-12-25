@@ -9,7 +9,11 @@
 #ifndef foundation_parallelism_parallelism_hpp
 #define foundation_parallelism_parallelism_hpp
 
+#ifdef FOUNDATION_PARALLELISM
+
 #include "./mutex.hpp"
 #include "./thread.hpp"
+
+#endif // FOUNDATION_PARALLELISM
 
 #endif // foundation_parallelism_parallelism_hpp

@@ -64,4 +64,4 @@ namespace foundation::parallelism {
 
 }
 
-#endif // foundation_parallelism_mutex_hpp
+#endif // FOUNDATION_PARALLELISM
