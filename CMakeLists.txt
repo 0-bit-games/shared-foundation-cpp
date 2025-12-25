@@ -2,29 +2,19 @@ cmake_minimum_required(VERSION 3.22)
 
 project(foundation DESCRIPTION "Foundation is my own \"standard library\" for C++.")
 
-option(FOUNDATION_IO_FS "Enable foundation::io::fs namespace" OFF)
-option(FOUNDATION_PARALLELISM "Enable foundation::parallelism namespace" OFF)
+option(FOUNDATION_IO_FS "Enable foundation::io::fs namespace" ON)
+option(FOUNDATION_PARALLELISM "Enable foundation::parallelism namespace" ON)
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -Wno-vla-extension -std=c++20 -pthread")
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -Wno-vla-extension -std=c++20")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 if(NOT LIBRARY_BUILD_TYPE)
 	set(LIBRARY_BUILD_TYPE SHARED)
-endif()
-
-if(FOUNDATION_IO_FS)
-	message(STATUS "Foundation: namespace `io::fs` enabled")
-	add_definitions(-DFOUNDATION_IO_FS)
-endif()
-
-if (FOUNDATION_PARALLELISM)
-	message(STATUS "Foundation: namespace `parallelism` enabled")
-	add_definitions(-DFOUNDATION_PARALLELISM)
 endif()
 
 add_library(foundation ${LIBRARY_BUILD_TYPE}
@@ -46,11 +36,15 @@ add_library(foundation ${LIBRARY_BUILD_TYPE}
 	src/types/uuid.cpp)
 
 if(FOUNDATION_IO_FS)
+	message(STATUS "FOUNDATION_IO_FS is enabled.")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFOUNDATION_IO_FS")
 	target_sources(foundation PRIVATE
 		src/io/fs/file.cpp)
 endif()
 
 if (FOUNDATION_PARALLELISM)
+	message(STATUS "FOUNDATION_PARALLELISM is enabled.")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -DFOUNDATION_PARALLELISM")
 	target_sources(foundation PRIVATE
 		src/parallelism/mutex.cpp
 		src/parallelism/thread.cpp)
