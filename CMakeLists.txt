@@ -17,6 +17,16 @@ if(NOT LIBRARY_BUILD_TYPE)
 	set(LIBRARY_BUILD_TYPE SHARED)
 endif()
 
+if(FOUNDATION_IO_FS)
+	message(STATUS "Foundation: namespace `io::fs` enabled")
+	add_definitions(-DFOUNDATION_IO_FS)
+endif()
+
+if (FOUNDATION_PARALLELISM)
+	message(STATUS "Foundation: namespace `parallelism` enabled")
+	add_definitions(-DFOUNDATION_PARALLELISM)
+endif()
+
 add_library(foundation ${LIBRARY_BUILD_TYPE}
 	src/exceptions/exception.cpp
 	src/memory/allocator.cpp
@@ -36,15 +46,11 @@ add_library(foundation ${LIBRARY_BUILD_TYPE}
 	src/types/uuid.cpp)
 
 if(FOUNDATION_IO_FS)
-	message(STATUS "Foundation: namespace `io::fs` enabled")
-	add_compile_definitions(FOUNDATION_PARALLELISM)
 	target_sources(foundation PRIVATE
 		src/io/fs/file.cpp)
 endif()
 
 if (FOUNDATION_PARALLELISM)
-	message(STATUS "Foundation: namespace `parallelism` enabled")
-	add_compile_definitions(FOUNDATION_PARALLELISM)
 	target_sources(foundation PRIVATE
 		src/parallelism/mutex.cpp
 		src/parallelism/thread.cpp)
