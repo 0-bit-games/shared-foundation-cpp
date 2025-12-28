@@ -16,7 +16,11 @@ else()
 endif()
 
 if(NOT LIBRARY_BUILD_TYPE)
-	set(LIBRARY_BUILD_TYPE SHARED)
+	if(WIN32)
+		set(LIBRARY_BUILD_TYPE STATIC)
+	else()
+		set(LIBRARY_BUILD_TYPE SHARED)
+	endif()
 endif()
 
 add_library(foundation ${LIBRARY_BUILD_TYPE}
