@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.22)
 project(foundation DESCRIPTION "Foundation is my own \"standard library\" for C++.")
 
 option(FOUNDATION_IO_FS "Enable foundation::io::fs namespace" ON)
-option(FOUNDATION_PARALLELISM "Enable foundation::parallelism namespace" ON)
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
@@ -21,6 +20,8 @@ add_library(foundation ${LIBRARY_BUILD_TYPE}
 	src/exceptions/exception.cpp
 	src/memory/allocator.cpp
 	src/memory/object.cpp
+	src/parallelism/mutex.cpp
+	src/parallelism/thread.cpp
 	src/serialization/json.cpp
 	src/system/endian.cpp
 	src/system/environment.cpp
@@ -40,14 +41,6 @@ if(FOUNDATION_IO_FS)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFOUNDATION_IO_FS")
 	target_sources(foundation PRIVATE
 		src/io/fs/file.cpp)
-endif()
-
-if (FOUNDATION_PARALLELISM)
-	message(STATUS "FOUNDATION_PARALLELISM is enabled.")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -DFOUNDATION_PARALLELISM")
-	target_sources(foundation PRIVATE
-		src/parallelism/mutex.cpp
-		src/parallelism/thread.cpp)
 endif()
 
 set(ARCH_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_PROCESSOR}")
