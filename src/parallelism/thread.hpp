@@ -9,8 +9,9 @@
 #ifndef foundation_parallelism_thread_hpp
 #define foundation_parallelism_thread_hpp
 
-#include <pthread.h>
 #include <functional>
+
+#include "../platform/thread.hpp"
 
 #include "../memory/object.hpp"
 #include "../types/string.hpp"
@@ -35,7 +36,7 @@ namespace foundation::parallelism {
 
 		private:
 
-			pthread_t _thread;
+			PlatformThread _thread;
 			std::function<void()> _function;
 
 	};

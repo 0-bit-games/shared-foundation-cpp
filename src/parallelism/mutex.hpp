@@ -9,9 +9,9 @@
 #ifndef foundation_parallelism_mutex_hpp
 #define foundation_parallelism_mutex_hpp
 
-#include <pthread.h>
-
 #include <functional>
+
+#include "../platform/thread.hpp"
 
 namespace foundation::parallelism {
 
@@ -19,13 +19,7 @@ namespace foundation::parallelism {
 
 		public:
 
-			enum class Type {
-				normal,
-				recursive
-			};
-
-			Mutex(
-				Type type = Type::normal);
+			Mutex();
 
 			Mutex(const Mutex&) = delete;
 			Mutex(Mutex&&) = delete;
@@ -63,9 +57,8 @@ namespace foundation::parallelism {
 
 		private:
 
-			pthread_mutexattr_t _mutexAttributes;
-			mutable pthread_mutex_t _mutex;
-			mutable pthread_cond_t _condition;
+			mutable PlatformMutex _mutex;
+			mutable PlatformCondition _condition;
 
 	};
 

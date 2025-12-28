@@ -18,12 +18,12 @@ namespace foundation::tools {
 	namespace math {
 
 		template<typename T>
-		inline const T max(T a, T b) {
+		inline const T maximum(T a, T b) {
 			return (a > b ? a : b);
 		}
 
 		template<typename T>
-		inline const T min(T a, T b) {
+		inline const T minimum(T a, T b) {
 			return (a < b ? a : b);
 		}
 

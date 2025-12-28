@@ -58,9 +58,17 @@ namespace foundation::types {
 		using ReducerIndexStop = function<R(R result, T item, size_t idx, bool* stop)>;
 
 		static Data<T> fromCBuffer(const function<size_t(T*,size_t)>& todo, size_t length) {
+#if defined(_WIN32)
+			T* buffer = (T*)malloc(sizeof(T) * length);
+#else
 			T buffer[length];
+#endif
 			size_t read = todo(buffer, length);
-			return Data<T>((T*)buffer, math::min(read, length));
+			Data<T> result((T*)buffer, math::minimum(read, length));
+#if defined(_WIN32)
+			free(buffer);
+#endif
+			return result;
 		}
 
 		Data(const T* items, size_t length) : Type(), _storage(new Storage()), _offset(0), _length(0), _size(sizeof(T)), _hashIsDirty(true), _hash(0) {
@@ -358,7 +366,7 @@ namespace foundation::types {
 
 		Strong<Data<T>> subdata(size_t offset, size_t length = NotFound) const {
 			if (length == NotFound) length = this->_length;
-			length = (size_t)math::min((ssize_t)this->length() - (ssize_t)offset, (ssize_t)length);
+			length = (size_t)math::minimum((ssize_t)this->length() - (ssize_t)offset, (ssize_t)length);
 			return Strong<Data<T>>(*this, offset, length);
 		}
 
@@ -372,10 +380,10 @@ namespace foundation::types {
 				end = (this->length() - 1) + end;
 			}
 
-			end = math::min<ssize_t>((ssize_t)this->length() - 1, math::max<ssize_t>(-1, end));
-			start = math::max<ssize_t>(0, math::min<ssize_t>((ssize_t)this->length(), start));
+			end = math::minimum<ssize_t>((ssize_t)this->length() - 1, math::maximum<ssize_t>(-1, end));
+			start = math::maximum<ssize_t>(0, math::minimum<ssize_t>((ssize_t)this->length(), start));
 
-			return Strong<Data<T>>(*this, start, math::min<ssize_t>((ssize_t)this->length(), end - start + 1));
+			return Strong<Data<T>>(*this, start, math::minimum<ssize_t>((ssize_t)this->length(), end - start + 1));
 
 		}
 
@@ -417,7 +425,7 @@ namespace foundation::types {
 		size_t copy(void* bytes, size_t length, size_t offset = 0) {
 			if (offset > this->length()) return 0;
 			this->_ensureStorageOwnership();
-			length = math::min(length, this->length() - offset);
+			length = math::minimum(length, this->length() - offset);
 			memcpy(bytes, this->items(), sizeof(T) * length);
 			return length;
 		}
@@ -649,7 +657,11 @@ namespace foundation::types {
 			return this->equals((const Data<T>&)other);
 		}
 
+#if defined(_WIN32)
+		bool greaterThan(const Data<T>& other) const {
+#else
 		virtual bool greaterThan(const Data<T>& other) const override {
+#endif
 			for (size_t idx = 0 ; idx < this->length() ; idx++) {
 				if (idx >= other.length()) return true;
 				T left = this->_get(idx);

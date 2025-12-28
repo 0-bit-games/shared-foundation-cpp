@@ -10,7 +10,6 @@
 #define foundation_date_hpp
 
 #include <time.h>
-#include <sys/time.h>
 
 #include "./type.hpp"
 #include "./comparable.hpp"

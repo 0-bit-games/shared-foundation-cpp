@@ -84,13 +84,23 @@ String String::format(
 
 	va_start(args, format);
 
+#if defined(_WIN32)
+	char* buffer = (char*)malloc(size);
+#else
 	char buffer[size];
+#endif
 
 	vsnprintf(buffer, size, format, args);
 
 	va_end(args);
 
-	return String((const char*)buffer);
+	String result((const char*)buffer);
+
+#if defined(_WIN32)
+	free(buffer);
+#endif
+
+	return result;
 
 }
 
@@ -554,22 +564,21 @@ Data<uint8_t> String::_encodeUTF8(
 
 		uint32_t codePoint = buffer[idx];
 		if (codePoint < 0x80) {
-			ret.append(codePoint);
+			ret.append((uint8_t)codePoint);
 		} else if (codePoint < 0x800) {
-			uint8_t chr[2];
-			chr[0] = 0xC0 | (codePoint >> 6);
-			chr[1] = 0x80 | (codePoint & 0x3F);
+			chr[0] = (uint8_t)(0xC0 | (codePoint >> 6));
+			chr[1] = (uint8_t)(0x80 | (codePoint & 0x3F));
 			ret.append(chr, 2);
 		} else if (codePoint <= 0xFFFF) {
-			chr[0] = 0xE0 | (codePoint >> 12);
-			chr[1] = 0x80 | ((codePoint >> 6) & 0x3F);
-			chr[2] = 0x80 | (codePoint & 0x3F);
+			chr[0] = (uint8_t)(0xE0 | (codePoint >> 12));
+			chr[1] = (uint8_t)(0x80 | ((codePoint >> 6) & 0x3F));
+			chr[2] = (uint8_t)(0x80 | (codePoint & 0x3F));
 			ret.append(chr, 3);
 		} else if (codePoint <= 0x1FFFFF) {
-			chr[0] = 0xF0 | (codePoint >> 18);
-			chr[1] = 0x80 | ((codePoint >> 12) & 0x3F);
-			chr[2] = 0x80 | ((codePoint >> 6) & 0x3F);
-			chr[3] = 0x80 | (codePoint & 0x3F);
+			chr[0] = (uint8_t)(0xF0 | (codePoint >> 18));
+			chr[1] = (uint8_t)(0x80 | ((codePoint >> 12) & 0x3F));
+			chr[2] = (uint8_t)(0x80 | ((codePoint >> 6) & 0x3F));
+			chr[3] = (uint8_t)(0x80 | (codePoint & 0x3F));
 			ret.append(chr, 4);
 		}
 
@@ -630,8 +639,8 @@ Data<uint16_t> String::_encodeUTF16(
 		if (chr <= 0xFFFF) ret.append(Endian::fromSystemVariant((uint16_t)chr, endian));
 		else {
 			chr -= 0x10000;
-			ret.append(Endian::fromSystemVariant(0xD800 + ((chr >> 10) & 0x3FF), endian));
-			ret.append(Endian::fromSystemVariant(0xDC00 + (chr & 0x3FF), endian));
+			ret.append((uint16_t)Endian::fromSystemVariant(0xD800 + ((chr >> 10) & 0x3FF), endian));
+			ret.append((uint16_t)Endian::fromSystemVariant(0xDC00 + (chr & 0x3FF), endian));
 		}
 
 	}
@@ -702,7 +711,7 @@ Data<uint8_t> String::_encodeHex(
 	Data<uint8_t> ret;
 
 	for (size_t idx = 0 ; idx < buffer.length() ; idx += 2) {
-		ret.append(_valueFromHex(buffer[idx], idx) << 4 | _valueFromHex(buffer[idx + 1], idx + 1));
+		ret.append(_valueFromHex((uint8_t)buffer[idx], idx) << 4 | _valueFromHex((uint8_t)buffer[idx + 1], idx + 1));
 	}
 
 	return ret;

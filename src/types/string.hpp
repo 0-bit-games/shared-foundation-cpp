@@ -44,7 +44,9 @@ namespace foundation::types {
 			const size_t size);
 
 		static
+		#if defined(__GNUC__) || defined(__clang__)
 		__attribute__ ((format (printf, 1, 0)))
+		#endif
 		String format(const char* format, ...);
 
 		static Strong<String> fromHex(

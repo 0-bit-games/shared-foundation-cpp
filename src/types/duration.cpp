@@ -67,18 +67,18 @@ Duration Duration::parse(const String& string) {
 	uint64_t minutes = 0;
 
 	if (parse.length() == 5 && parse.substring(2, 1)->equals(":")) {
-		hours = parse.substring(0, 2)->doubleValue();
-		minutes = parse.substring(3, 2)->doubleValue();
+		hours = (uint64_t)parse.substring(0, 2)->doubleValue();
+		minutes = (uint64_t)parse.substring(3, 2)->doubleValue();
 	} else if (parse.length() == 4) {
-		hours = parse.substring(0, 2)->doubleValue();
-		minutes = parse.substring(2, 4)->doubleValue();
+		hours = (uint64_t)parse.substring(0, 2)->doubleValue();
+		minutes = (uint64_t)parse.substring(2, 4)->doubleValue();
 	} else if (parse.length() == 2) {
-		hours = parse.doubleValue();
+		hours = (uint64_t)parse.doubleValue();
 	} else {
 		throw DurationParserException();
 	}
 
-	return Duration::fromHours(hours) + Duration::fromMinutes(minutes) * multiplier;
+	return Duration::fromHours((double)hours) + Duration::fromMinutes((double)minutes) * multiplier;
 }
 
 Duration::Duration() : _seconds(0) {}
@@ -136,11 +136,11 @@ double Duration::days() const {
 String Duration::toString(ToStringOptions options) const {
 	double offset = _seconds;
 	double absOffset = fabs(offset);
-	uint64_t hours = Duration(absOffset).hours();
-	uint64_t minutes = Duration(absOffset - Duration::fromHours(hours)).minutes();
+	uint64_t hours = (uint64_t)Duration(absOffset).hours();
+	uint64_t minutes = (uint64_t)Duration(absOffset - Duration::fromHours((double)hours)).minutes();
 	String prefix = offset < 0 ? "-" : (static_cast<uint8_t>(options) & static_cast<uint8_t>(ToStringOptions::prefixPositive) ? "+" : "");
 	return prefix.mapCString<String>([&hours, &minutes](const char* prefix) {
-		return String(String::format("%s%02llu:%02llu", prefix, hours, minutes));
+		return String::format("%s%02llu:%02llu", prefix, hours, minutes);
 	});
 }
 

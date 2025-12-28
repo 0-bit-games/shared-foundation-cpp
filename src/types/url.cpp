@@ -8,6 +8,12 @@
 
 #include "url.hpp"
 
+#if defined(_WIN32)
+#include <direct.h>
+#else
+typedef sscanf scanf_s;
+#endif
+
 using namespace foundation::types;
 
 String URL::escapeDecode(
@@ -22,7 +28,7 @@ String URL::escapeDecode(
 
 		if (chr == '+') chr = ' ';
 		else if (chr == '%') {
-			if (idx >= string.length() - 2) throw UrlDecodingException(chr);
+			if (idx >= string.length() - 2) throw UrlDecodingException((uint8_t)chr);
 			chr = string.substring(idx + 1, 2)->hexData()->itemAtIndex(0);
 			idx += 2;
 		}
@@ -62,7 +68,11 @@ String URL::escapeEncode(
 Strong<URL> URL::cwd() {
 	return fromString(
 		String::fromCString([](char* buffer, size_t length) {
+#if defined(_WIN32)
+			buffer = _getcwd(buffer, (int)length);
+#else
 			buffer = getcwd(buffer, length);
+#endif
 			return strlen(buffer);
 		}, 4096)
 		.mapCString<String>([](const char* cwd) {
@@ -125,7 +135,7 @@ Strong<URL> URL::fromString(
 			if (portDividerIdx != NotFound) {
 				authority.substring(portDividerIdx + 1)
 					->withCString([&](const char* portString) {
-						if (sscanf(portString, "%hu", &port) == 0) {
+						if (sscanf_s(portString, "%hu", &port) == 0) {
 							throw URLMalformedException();
 						}
 					});

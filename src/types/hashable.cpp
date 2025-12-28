@@ -24,7 +24,7 @@ Hashable::Builder& Hashable::Builder::add(
 	double value
 ) {
 	uint64_t intValue = 0;
-	memcpy(&intValue, &value, math::min(sizeof(uint64_t), sizeof(double)));
+	memcpy(&intValue, &value, math::minimum(sizeof(uint64_t), sizeof(double)));
 	return this->add(intValue);
 }
 

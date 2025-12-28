@@ -41,7 +41,7 @@ void Allocator::operator delete(
 uint64_t Allocator::calculateBufferLength(
 	const uint64_t& minimumLength
 ) {
-	return (uint64_t)pow(2, ceil(log2((math::max<double>(minimumLength, FOUNDATION_BLOCK_SIZE) / FOUNDATION_BLOCK_SIZE)))) * FOUNDATION_BLOCK_SIZE;;
+	return (uint64_t)pow(2, ceil(log2((math::maximum<double>((double)minimumLength, FOUNDATION_BLOCK_SIZE) / FOUNDATION_BLOCK_SIZE)))) * FOUNDATION_BLOCK_SIZE;;
 }
 
 void* Allocator::allocate(

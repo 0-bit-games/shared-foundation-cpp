@@ -12,6 +12,8 @@
 
 #if defined(__APPLE__) || defined(BSD)
 #define RANDOM() arc4random()
+#elif defined(_WIN32)
+#define RANDOM() rand()
 #else
 #define RANDOM() random()
 #endif
@@ -150,7 +152,7 @@ uint64_t UUID::_decode(
 			throw UUIDMalformedException();
 		}
 
-		bytes[idx] = (upperIndex << 4) | lowerIndex;
+		bytes[idx] = (uint8_t)((upperIndex << 4) | lowerIndex);
 
 	}
 

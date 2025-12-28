@@ -10,39 +10,24 @@
 
 using namespace foundation::parallelism;
 
-Mutex::Mutex(
-	Type type
-) {
+Mutex::Mutex() {
 
-	pthread_mutexattr_init(&_mutexAttributes);
-
-	if (type == Type::recursive) {
-		pthread_mutexattr_settype(
-			&_mutexAttributes,
-			PTHREAD_MUTEX_RECURSIVE);
-	} else {
-		pthread_mutexattr_settype(
-			&_mutexAttributes,
-			PTHREAD_MUTEX_DEFAULT);
-	}
-
-	pthread_mutex_init(&_mutex, &_mutexAttributes);
-	pthread_cond_init(&_condition, nullptr);
+	PlatformMutex_Init(&_mutex);
+	PlatformCondition_Init(&_condition);
 
 }
 
 Mutex::~Mutex() {
-	pthread_cond_destroy(&_condition);
-	pthread_mutex_destroy(&_mutex);
-	pthread_mutexattr_destroy(&_mutexAttributes);
+	PlatformCondition_Destroy(&_condition);
+	PlatformMutex_Destroy(&_mutex);
 }
 
 void Mutex::lock() const {
-	pthread_mutex_lock(&_mutex);
+	PlatformMutex_Lock(&_mutex);
 }
 
 void Mutex::unlock() const {
-	pthread_mutex_unlock(&_mutex);
+	PlatformMutex_Unlock(&_mutex);
 }
 
 void Mutex::locked(
@@ -55,13 +40,13 @@ void Mutex::locked(
 }
 
 void Mutex::wait() {
-	pthread_cond_wait(&_condition, &_mutex);
+	PlatformCondition_Wait(&_condition, &_mutex);
 }
 
 void Mutex::notify() {
-	pthread_cond_signal(&_condition);
+	PlatformCondition_NotifyOne(&_condition);
 }
 
 void Mutex::broadcast() {
-	pthread_cond_broadcast(&_condition);
+	PlatformCondition_NotifyAll(&_condition);
 }

@@ -283,7 +283,7 @@ Strong<Type> JSON::_parseString(
 				if (string[*idx] <= 0x0f) {
 					throw JSONMalformedException(*line, *character);
 				}
-				stringBytes.append(string[*idx]);
+				stringBytes.append((int16_t)string[*idx]);
 		}
 
 		(*idx)++;
@@ -583,9 +583,16 @@ Strong<String> JSON::_stringify(
 				case Numeric::Subtype::floatingPoint: {
 					double value = data.as<Float>().value();
 					uint64_t length = snprintf(nullptr, 0, "%g", value);
+#if defined(_WIN32)
+					char* str = (char*)malloc(length + 1);
+#else
 					char str[length + 1];
+#endif
 					snprintf(str, length + 1, "%g", value);
 					result->append(str);
+#if defined(_WIN32)
+					free(str);
+#endif
 					break;
 				}
 			}

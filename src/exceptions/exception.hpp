@@ -14,6 +14,11 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#if defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 namespace foundation::exceptions {
 
 	class Exception {

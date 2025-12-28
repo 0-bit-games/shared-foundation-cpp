@@ -10,7 +10,5 @@
 #define foundation_tools_hpp
 
 #include "./math.hpp"
-#include "./queue.hpp"
-#include "./regular-expression.hpp"
 
 #endif /* foundation_tools_hpp */

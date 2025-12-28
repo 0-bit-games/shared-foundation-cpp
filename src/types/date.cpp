@@ -63,8 +63,8 @@ void Date::_components(
 	const unsigned d = doy - (153*mp+2)/5 + 1;                             // [1, 31]
 	const unsigned m = mp + (mp < 10 ? 3 : -9);                            // [1, 12]
 	if (year != nullptr) *year = y + (m <= 2);
-	if (month != nullptr) *month = m;
-	if (day != nullptr) *day = d;
+	if (month != nullptr) *month = (uint8_t)m;
+	if (day != nullptr) *day = (uint8_t)d;
 
 }
 
@@ -77,21 +77,30 @@ void Date::_set(
 	const uint8_t seconds,
 	uint64_t microseconds) {
 
-	_time = Duration::fromDays(_daysFromEpoch(year, month, day));
+	_time = Duration::fromDays((double)_daysFromEpoch(year, month, day));
 	_time += Duration::fromHours(hours);
 	_time += Duration::fromMinutes(minutes);
 	_time += Duration::fromSeconds(seconds);
-	_time += Duration::fromMicroseconds(microseconds);
+	_time += Duration::fromMicroseconds((double)microseconds);
 
 }
 
 const Duration Date::_localOffset() {
 
+#if defined(_WIN32)
+	
+	TIME_ZONE_INFORMATION tzi;
+	DWORD result = GetTimeZoneInformation(&tzi);
+	if (result == TIME_ZONE_ID_INVALID) return Duration::zero();
+	return Duration::fromMinutes(-((double)tzi.Bias));
+
+#else
 	time_t rawTime;
 
 	::time(&rawTime);
 
 	return localtime(&rawTime)->tm_gmtoff;
+#endif
 
 }
 
@@ -115,6 +124,20 @@ Date::Date(
 Date::Date(
 ) : _timeZone(TimeZone::utc) {
 
+#if defined(_WIN32)
+
+	ULARGE_INTEGER ull;
+	FILETIME ft;
+
+	GetSystemTimeAsFileTime(&ft);
+
+	ull.LowPart = ft.dwLowDateTime;
+	ull.HighPart = ft.dwHighDateTime;
+
+	_time = Duration::fromSeconds((double)((ull.QuadPart / 10000000ULL) - 11644473600ULL));
+
+#else
+
 	struct timeval tv;
 
 	gettimeofday(&tv, nullptr);
@@ -122,6 +145,8 @@ Date::Date(
 	time_t time = ::time(nullptr);
 
 	_time = Duration::fromSeconds((double)time + ((double)tv.tv_usec / 1000000));
+
+#endif
 
 }
 
@@ -167,15 +192,15 @@ Date::Date(
 
 		auto datePart = parts->itemAtIndex(0);
 
-		year = datePart->substring(0, 4)->doubleValue();
+		year = (int64_t)datePart->substring(0, 4)->doubleValue();
 
 		if (datePart->length() == 8) {
-			month = datePart->substring(4, 2)->doubleValue();
-			day = datePart->substring(6, 2)->doubleValue();
+			month = (uint8_t)datePart->substring(4, 2)->doubleValue();
+			day = (uint8_t)datePart->substring(6, 2)->doubleValue();
 		}
 		else if (datePart->length() == 10) {
-			month = datePart->substring(5, 2)->doubleValue();
-			day = datePart->substring(8, 2)->doubleValue();
+			month = (uint8_t)datePart->substring(5, 2)->doubleValue();
+			day = (uint8_t)datePart->substring(8, 2)->doubleValue();
 		}
 		else throw ISO8601Exception();
 
@@ -193,19 +218,19 @@ Date::Date(
 
 				auto hmsComponentParts = timeComponentsSubParts->itemAtIndex(0);
 
-				hours = hmsComponentParts->substring(0, 2)->doubleValue();
+				hours = (uint8_t)hmsComponentParts->substring(0, 2)->doubleValue();
 
 				if (hmsComponentParts->length() == 5) {
-					minutes = hmsComponentParts->substring(2, 2)->doubleValue();
-					seconds = hmsComponentParts->substring(4, 2)->doubleValue();
+					minutes = (uint8_t)hmsComponentParts->substring(2, 2)->doubleValue();
+					seconds = (uint8_t)hmsComponentParts->substring(4, 2)->doubleValue();
 				}
 				else if (hmsComponentParts->length() == 8) {
-					minutes = hmsComponentParts->substring(3, 2)->doubleValue();
-					seconds = hmsComponentParts->substring(6, 2)->doubleValue();
+					minutes = (uint8_t)hmsComponentParts->substring(3, 2)->doubleValue();
+					seconds = (uint8_t)hmsComponentParts->substring(6, 2)->doubleValue();
 				}
 
 				if (timeComponentsSubParts->count() > 1) {
-					microseconds = timeComponentsSubParts->itemAtIndex(1)->doubleValue();
+					microseconds = (uint64_t)timeComponentsSubParts->itemAtIndex(1)->doubleValue();
 				}
 
 			} else throw ISO8601Exception();
@@ -229,19 +254,19 @@ Date::~Date() { }
 
 int64_t Date::year() const {
 	int64_t year;
-	_components(this->_time.days(), &year, nullptr, nullptr);
+	_components((int64_t)this->_time.days(), &year, nullptr, nullptr);
 	return year;
 }
 
 Date::Month Date::month() const {
 	uint8_t month;
-	_components(this->_time.days(), nullptr, &month, nullptr);
+	_components((int64_t)this->_time.days(), nullptr, &month, nullptr);
 	return Month(month);
 }
 
 int16_t Date::day() const {
 	uint8_t day;
-	_components(this->_time.days(), nullptr, nullptr, &day);
+	_components((int64_t)this->_time.days(), nullptr, nullptr, &day);
 	return day;
 }
 
@@ -260,19 +285,19 @@ bool Date::isLeapYear() {
 }
 
 uint8_t Date::hours() const {
-	return this->durationSinceMidnight() / Duration::hour();
+	return (uint8_t)(this->durationSinceMidnight() / Duration::hour());
 }
 
 uint8_t Date::minutes() const {
-	return (this->durationSinceMidnight().seconds() - (this->hours() * Duration::hour())) / Duration::minute();
+	return (uint8_t)((this->durationSinceMidnight().seconds() - (this->hours() * Duration::hour())) / Duration::minute());
 }
 
 uint8_t Date::seconds() const {
-	return (this->durationSinceMidnight().seconds()) - (this->hours() * Duration::hour()) - (this->minutes() * Duration::minute());
+	return (uint8_t)((this->durationSinceMidnight().seconds()) - (this->hours() * Duration::hour()) - (this->minutes() * Duration::minute()));
 }
 
 uint32_t Date::microseconds() const{
-	return (this->_time.seconds() - floor(this->_time.seconds())) * 1000000;
+	return (uint32_t)((this->_time.seconds() - floor(this->_time.seconds())) * 1000000);
 }
 
 const Duration Date::durationSinceEpoch() const{

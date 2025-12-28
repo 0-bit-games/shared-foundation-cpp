@@ -26,25 +26,19 @@ Thread::Thread(
     _function([=]() {
 #if defined(__APPLE__) || defined(__linux__)
     	name.withCString([&](const char* cString) {
-#if defined(__APPLE__)
-    		pthread_setname_np(cString);
-#elif defined(__linux__)
-    		pthread_setname_np(pthread_self(), cString);
-#endif
+    		PlatformThread_SetName(cString);
     	});
 #endif
     	function();
     }) {
 	
-	pthread_create(&this->_thread, nullptr, [](void* arg) -> void* {
-		auto func = static_cast<std::function<void()>*>(arg);
-		(*func)();
-		return nullptr;
-	}, &this->_function);
+	PlatformThread_Create(
+		&this->_thread, 
+		this->_function);
 
 }
 
 Thread::~Thread() {
-	pthread_join(this->_thread, nullptr);
+	PlatformThread_Join(this->_thread);
 	this->_function = nullptr;
 }

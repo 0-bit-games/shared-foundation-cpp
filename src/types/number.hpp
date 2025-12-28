@@ -77,15 +77,15 @@ namespace foundation::types {
 							T value = numeric_limits<T>::lowest();
 
 							if (boundary.equals("")) {
-								if (idx == 1) value = numeric_limits<T>::max();
+								if (idx == 1) value = (numeric_limits<T>::max)();
 							} else {
 								value = (T)boundary.doubleValue();
 							}
 
-							return (T)math::max<T>(
+							return (T)math::maximum<T>(
 								numeric_limits<T>::lowest(),
-								math::min<T>(
-									numeric_limits<T>::max(),
+								math::minimum<T>(
+									(numeric_limits<T>::max)(),
 									value));
 
 						});
@@ -95,7 +95,7 @@ namespace foundation::types {
 					}
 
 					T lowerBoundary = numeric_limits<T>::lowest();
-					T upperBoundary = numeric_limits<T>::max();
+					T upperBoundary = (numeric_limits<T>::max)();
 
 					if (boundaries.length() == 1) {
 						lowerBoundary = upperBoundary = boundaries[0];
