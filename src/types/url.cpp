@@ -11,7 +11,7 @@
 #if defined(_WIN32)
 #include <direct.h>
 #else
-typedef sscanf scanf_s;
+#include <unistd.h>
 #endif
 
 using namespace foundation::types;
@@ -135,7 +135,11 @@ Strong<URL> URL::fromString(
 			if (portDividerIdx != NotFound) {
 				authority.substring(portDividerIdx + 1)
 					->withCString([&](const char* portString) {
+#if defined(_WIN32)
 						if (sscanf_s(portString, "%hu", &port) == 0) {
+#else
+						if (sscanf(portString, "%hu", &port) == 0) {
+#endif
 							throw URLMalformedException();
 						}
 					});

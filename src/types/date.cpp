@@ -8,6 +8,10 @@
 
 #include "date.hpp"
 
+#if !defined(_WIN32)
+#include <sys/time.h>
+#endif
+
 using namespace foundation::types;
 
 Type::Kind Date::typeKind() {

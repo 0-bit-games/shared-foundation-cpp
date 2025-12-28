@@ -53,7 +53,6 @@ void PlatformThread_Create(
 }
 
 void PlatformThread_SetName(
-	PlatformThread,
 	const char*
 ) {
 	// Not implemented on Windows
@@ -105,6 +104,24 @@ void PlatformMutex_Init(
 	pthread_mutex_init(mutex, nullptr);
 }
 
+void PlatformMutex_Lock(
+	PlatformMutex* mutex
+) {
+	pthread_mutex_lock(mutex);
+}
+
+void PlatformMutex_Unlock(
+	PlatformMutex* mutex
+) {
+	pthread_mutex_unlock(mutex);
+}
+
+void PlatformMutex_Destroy(
+	PlatformMutex* mutex
+) {
+	pthread_mutex_destroy(mutex);
+}
+
 void PlatformThread_Create(
 	PlatformThread* thread,
 	std::function<void()> function
@@ -120,7 +137,7 @@ void PlatformThread_SetName(
 	const char* name
 ) {
 #if defined(__APPLE__)
-	pthread_setname_np(cString);
+	pthread_setname_np(name);
 #elif defined(__linux__)
 	pthread_setname_np(pthread_self(), cString);
 #endif

@@ -48,7 +48,6 @@ void PlatformThread_Create(
 	std::function<void()> function);
 
 void PlatformThread_SetName(
-	PlatformThread thread,
 	const char* name);
 
 void PlatformThread_Join(
