@@ -10,11 +10,25 @@
 
 using namespace foundation::parallelism;
 
-Mutex::Mutex() {
+Mutex::Mutex(
+	Type type
+) {
+
 	pthread_mutexattr_init(&_mutexAttributes);
-	pthread_mutexattr_settype(&_mutexAttributes, PTHREAD_MUTEX_RECURSIVE);
+
+	if (type == Type::recursive) {
+		pthread_mutexattr_settype(
+			&_mutexAttributes,
+			PTHREAD_MUTEX_RECURSIVE);
+	} else {
+		pthread_mutexattr_settype(
+			&_mutexAttributes,
+			PTHREAD_MUTEX_DEFAULT);
+	}
+
 	pthread_mutex_init(&_mutex, &_mutexAttributes);
 	pthread_cond_init(&_condition, nullptr);
+
 }
 
 Mutex::~Mutex() {

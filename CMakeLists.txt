@@ -44,7 +44,8 @@ endif()
 
 if (FOUNDATION_PARALLELISM)
 	message(STATUS "FOUNDATION_PARALLELISM is enabled.")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -DFOUNDATION_PARALLELISM")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+	target_compile_definitions(foundation PRIVATE FOUNDATION_PARALLELISM)
 	target_sources(foundation PRIVATE
 		src/parallelism/mutex.cpp
 		src/parallelism/thread.cpp)

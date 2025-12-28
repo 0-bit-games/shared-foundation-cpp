@@ -19,7 +19,14 @@ namespace foundation::parallelism {
 
 		public:
 
-			Mutex();
+			enum class Type {
+				normal,
+				recursive
+			};
+
+			Mutex(
+				Type type = Type::normal);
+
 			Mutex(const Mutex&) = delete;
 			Mutex(Mutex&&) = delete;
 
