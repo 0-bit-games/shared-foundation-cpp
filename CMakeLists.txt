@@ -15,15 +15,7 @@ else()
 	set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 endif()
 
-if(NOT LIBRARY_BUILD_TYPE)
-	if(WIN32)
-		set(LIBRARY_BUILD_TYPE STATIC)
-	else()
-		set(LIBRARY_BUILD_TYPE SHARED)
-	endif()
-endif()
-
-add_library(foundation ${LIBRARY_BUILD_TYPE}
+add_library(foundation STATIC
 	src/exceptions/exception.cpp
 	src/memory/allocator.cpp
 	src/memory/object.cpp
