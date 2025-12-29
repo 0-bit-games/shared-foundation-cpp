@@ -139,7 +139,7 @@ void PlatformThread_SetName(
 #if defined(__APPLE__)
 	pthread_setname_np(name);
 #elif defined(__linux__)
-	pthread_setname_np(pthread_self(), cString);
+	pthread_setname_np(pthread_self(), name);
 #endif
 }
 
