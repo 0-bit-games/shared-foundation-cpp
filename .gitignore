@@ -8,3 +8,8 @@ build/
 cmake_install.cmake
 .build/
 .swiftpm/
+ALL_BUILD.*
+INSTALL*
+foundation.dir/
+foundation.sln
+foundation.vcxproj*
