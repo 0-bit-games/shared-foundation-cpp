@@ -7,6 +7,7 @@
 //
 
 #ifndef foundation_platform_thread_hpp
+#define foundation_platform_thread_hpp
 
 #include <functional>
 
