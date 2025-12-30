@@ -36,7 +36,7 @@ void PlatformMutex_Destroy(
 
 void PlatformThread_Create(
 	PlatformThread* thread,
-	std::function<void()> function
+	std::function<void()>* function
 ) {
 	*thread = (HANDLE)_beginthreadex(
 		nullptr,
@@ -46,7 +46,7 @@ void PlatformThread_Create(
 			(*func)();
 			return 0;
 		},
-		&function,
+		function,
 		0,
 		nullptr
 	);
@@ -124,13 +124,13 @@ void PlatformMutex_Destroy(
 
 void PlatformThread_Create(
 	PlatformThread* thread,
-	std::function<void()> function
+	std::function<void()>* function
 ) {
 	pthread_create(thread, nullptr, [](void* arg) -> void* {
 		auto func = static_cast<std::function<void()>*>(arg);
 		(*func)();
 		return nullptr;
-	}, &function);
+	}, function);
 }
 
 void PlatformThread_SetName(

@@ -45,7 +45,7 @@ void PlatformMutex_Destroy(
 
 void PlatformThread_Create(
 	PlatformThread* thread,
-	std::function<void()> function);
+	std::function<void()>* function);
 
 void PlatformThread_SetName(
 	const char* name);
