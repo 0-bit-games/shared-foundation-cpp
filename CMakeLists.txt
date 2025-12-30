@@ -8,6 +8,8 @@ endif()
 
 if (WIN32)
 	set(CMAKE_CXX_FLAGS "/std:c++20 /W4 /WX /EHsc")
+	set(CMAKE_CXX_FLAGS_DEBUG "/Zi /Od")
+	set(CMAKE_CXX_FLAGS_RELEASE "/O2")
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wno-vla-extension")
 	set(CMAKE_CXX_FLAGS "-std=c++20")
