@@ -62,10 +62,8 @@ namespace foundation::tools {
 					T* newData = (T*)calloc(this->_capacity + 1, sizeof(T));
 
 					for (size_t idx = 0 ; idx < this->_length ; idx++) {
-						CONSTRUCT_IN_PLACE(
-							newData[idx],
-							T,
-							std::move(this->_data[(this->_head + idx) % this->_capacity]));
+						new (&newData[idx]) T(
+							this->_data[(this->_head + idx) % this->_capacity]);
 					}
 
 					free(this->_data);
@@ -77,10 +75,7 @@ namespace foundation::tools {
 
 				}
 
-				CONSTRUCT_IN_PLACE(
-					this->_data[this->_tail],
-					T,
-					item);
+				new (&this->_data[this->_tail]) T(item);
 
 				this->_tail = (this->_tail + 1) % this->_capacity;
 				this->_length++;
