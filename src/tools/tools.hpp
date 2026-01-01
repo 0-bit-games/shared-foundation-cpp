@@ -9,7 +9,6 @@
 #ifndef foundation_tools_hpp
 #define foundation_tools_hpp
 
-#include "./macros.hpp"
 #include "./math.hpp"
 #include "./queue.hpp"
 
