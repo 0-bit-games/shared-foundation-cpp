@@ -62,7 +62,9 @@ namespace foundation::tools {
 					T* newData = (T*)calloc(this->_capacity + 1, sizeof(T));
 
 					for (size_t idx = 0 ; idx < this->_length ; idx++) {
-						new (&newData[idx]) T(
+						CONSTRUCT_IN_PLACE(
+							newData[idx],
+							T,
 							std::move(this->_data[(this->_head + idx) % this->_capacity]));
 					}
 
@@ -75,7 +77,10 @@ namespace foundation::tools {
 
 				}
 
-				new (&this->_data[this->_tail]) T(item);
+				CONSTRUCT_IN_PLACE(
+					this->_data[this->_tail],
+					T,
+					item);
 
 				this->_tail = (this->_tail + 1) % this->_capacity;
 				this->_length++;
