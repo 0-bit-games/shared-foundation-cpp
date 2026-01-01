@@ -30,7 +30,11 @@ namespace foundation::memory {
 
 	private:
 
+#if defined(_WIN32)
+		mutable size_t _retainCount;
+#else
 		mutable std::atomic<size_t> _retainCount;
+#endif
 		mutable void** _weakReferences;
 		mutable size_t _weakReferencesSize;
 		mutable size_t _weakReferencesCount;
