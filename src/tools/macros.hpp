@@ -7,7 +7,10 @@
 //
 
 #if defined(_WIN32)
+#pragma warning(push)
+#pragma warning(disable:  4291)
 #define CONSTRUCT_IN_PLACE(PLACE, TYPE, ...) noexcept(new (&PLACE) TYPE(__VA_ARGS__))
+
 #else
 #define CONSTRUCT_IN_PLACE(PLACE, TYPE, ...) new (&PLACE) TYPE(__VA_ARGS__)
 #endif
