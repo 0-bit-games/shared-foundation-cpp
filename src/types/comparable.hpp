@@ -10,15 +10,16 @@
 #define foundation_comparable_hpp
 
 #include "./comparison.hpp"
+#include "./equatable.hpp"
 
 namespace foundation::types {
 
 	template<typename T>
-	class Comparable {
+	class Comparable : public Equatable<T> {
 
 		public:
 
-			bool equals(const T& other) const {
+			virtual bool equals(const T& other) const override {
 				return !this->greaterThan(other) && !other.greaterThan((T&)*this);
 			}
 
