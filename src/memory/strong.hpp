@@ -27,6 +27,21 @@ namespace foundation::memory {
 	template<typename T = Object>
 	class Strong : public Allocator {
 
+	public:
+
+		template<typename... Args>
+		static Strong<T> create(Args&&... args) {
+
+			static_assert(is_base_of<Object, T>::value);
+
+			Strong<T> result(nullptr);
+
+			result._setObject(new T(std::forward<Args>(args)...), true);
+
+			return result;
+
+		}
+
 	private:
 
 		T* _object;
