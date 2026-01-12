@@ -640,7 +640,7 @@ namespace foundation::types {
 				.template as<Type>();
 		}
 
-		bool equals(const Data<T>& other) const {
+		virtual bool equals(const Data<T>& other) const override {
 			if (this->length() != other.length()) return false;
 			for (size_t idx = 0 ; idx < this->length() ; idx++) {
 				if (this->_get(idx) != other._get(idx)) return false;
