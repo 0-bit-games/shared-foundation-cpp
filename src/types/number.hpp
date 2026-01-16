@@ -59,26 +59,8 @@ namespace foundation::types {
 		}
 
 		virtual Strong<Type> clone() const override {
-
-			switch (this->_subtype) {
-				case Subtype::boolean:
-					return Strong<Number<bool>>(
-						Number<bool>::getValue(*this))
-						.template as<Type>();
-				case Subtype::floatingPoint:
-					return Strong<Number<double>>(
-						Number<double>::getValue(*this))
-						.template as<Type>();
-				case Subtype::integer:
-					return Strong<Number<int64_t>>(
-						Number<int64_t>::getValue(*this))
-						.template as<Type>();
-				default:
-					break;
-			}
-			
-			throw TypeConversionException();
-
+			return Strong<Number<T>>(*this)
+				.template as<Type>();
 		}
 
 		static bool within(
