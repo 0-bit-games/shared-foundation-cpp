@@ -583,16 +583,9 @@ Strong<String> JSON::_stringify(
 				case Numeric::Subtype::floatingPoint: {
 					double value = data.as<Float>().value();
 					uint64_t length = snprintf(nullptr, 0, "%g", value);
-#if defined(_WIN32)
-					char* str = (char*)malloc(length + 1);
-#else
-					char str[length + 1];
-#endif
-					snprintf(str, length + 1, "%g", value);
-					result->append(str);
-#if defined(_WIN32)
-					free(str);
-#endif
+					std::vector<char> str(length + 1);
+					snprintf(str.data(), length + 1, "%g", value);
+					result->append(str.data());
 					break;
 				}
 			}

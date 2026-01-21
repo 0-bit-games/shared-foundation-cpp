@@ -58,16 +58,9 @@ namespace foundation::types {
 		using ReducerIndexStop = function<R(R result, T item, size_t idx, bool* stop)>;
 
 		static Data<T> fromCBuffer(const function<size_t(T*,size_t)>& todo, size_t length) {
-#if defined(_WIN32)
-			T* buffer = (T*)malloc(sizeof(T) * length);
-#else
-			T buffer[length];
-#endif
-			size_t read = todo(buffer, length);
-			Data<T> result((T*)buffer, math::minimum(read, length));
-#if defined(_WIN32)
-			free(buffer);
-#endif
+			std::vector<T> buffer(length);
+			size_t read = todo(buffer.data(), length);
+			Data<T> result((T*)buffer.data(), math::minimum(read, length));
 			return result;
 		}
 
