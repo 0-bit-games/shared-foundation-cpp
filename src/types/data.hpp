@@ -706,6 +706,14 @@ namespace foundation::types {
 
 		public:
 
+			void* operator new(size_t size) noexcept(false) {
+				return Allocator::allocate(size);
+			}
+
+			void operator delete(void* ptr) throw() {
+				Allocator::deallocate(ptr);
+			}
+
 			Storage(const Storage&) = delete;
 			Storage(Storage&&) = delete;
 
