@@ -44,9 +44,10 @@ void PlatformThread_Create(
 		[](void* arg) -> unsigned {
 			auto func = static_cast<std::function<void()>*>(arg);
 			(*func)();
+			delete func;
 			return 0;
 		},
-		function,
+		new std::function<void()>(*function),
 		0,
 		nullptr
 	);
