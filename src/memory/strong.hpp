@@ -35,6 +35,8 @@ namespace foundation::memory {
 
 			T* oldObject = _object;
 
+			_object = nullptr;
+
 			if (object) {
 				// If object is allocated on the stack, we make a copy on the heap.
 				if (!newObject && object->retainCount() == 0) {
