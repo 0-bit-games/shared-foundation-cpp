@@ -55,7 +55,11 @@ Hashable::Hashable(
 ) { }
 
 uint64_t Hashable::hash() const {
-	return this->hashBuilder();
+
+	Builder builder;
+
+	return this->hashBuild(builder);
+
 }
 
 Hashable& Hashable::operator=(
@@ -70,6 +74,8 @@ Hashable& Hashable::operator=(
 	return *this;
 }
 
-Hashable::Builder Hashable::hashBuilder() const {
-	throw NotImplementedException();
+uint64_t Hashable::hashBuild(
+	Builder& builder
+) const {
+	return builder;
 }
