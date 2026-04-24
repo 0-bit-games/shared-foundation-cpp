@@ -74,7 +74,7 @@ Hashable& Hashable::operator=(
 	return *this;
 }
 
-uint64_t Hashable::hashBuild(
+Hashable::Builder& Hashable::hashBuild(
 	Builder& builder
 ) const {
 	return builder;

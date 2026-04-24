@@ -65,7 +65,7 @@ namespace foundation::types {
 
 		protected:
 
-			virtual uint64_t hashBuild(
+			virtual Builder& hashBuild(
 				Builder& builder
 			) const;
 
