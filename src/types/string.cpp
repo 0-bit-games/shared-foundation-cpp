@@ -84,11 +84,7 @@ String String::format(
 
 	va_start(args, format);
 
-#if defined(_WIN32)
 	char* buffer = (char*)malloc(size);
-#else
-	char buffer[size];
-#endif
 
 	vsnprintf(buffer, size, format, args);
 
@@ -96,9 +92,7 @@ String String::format(
 
 	String result((const char*)buffer);
 
-#if defined(_WIN32)
 	free(buffer);
-#endif
 
 	return result;
 
