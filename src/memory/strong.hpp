@@ -204,7 +204,13 @@ namespace foundation::memory {
 		}
 
 		Strong<T> retained() const {
+
+			if (this->_object == nullptr) {
+				return Strong<T>(nullptr);
+			}
+
 			return Strong<T>(this->_object);
+
 		}
 
 		Object* object() const {
