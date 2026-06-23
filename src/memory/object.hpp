@@ -73,6 +73,7 @@ namespace foundation::memory {
 	private:
 
 		static std::map<Object*, Object*> _objects;
+		static size_t _totalObjects;
 
 	};
 

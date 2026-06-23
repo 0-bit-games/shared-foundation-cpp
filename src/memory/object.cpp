@@ -88,6 +88,7 @@ Object::Object(
 	_weakReferencesSize(0),
 	_weakReferencesCount(0) {
 	_objects.erase(this);
+	_totalObjects++;
 }
 
 Object::Object(
@@ -99,3 +100,4 @@ Object::Object(
 ) : Object() { }
 
 std::map<Object*, Object*> Object::_objects;
+size_t Object::_totalObjects = 0;
