@@ -16,7 +16,7 @@
 using namespace foundation::memory;
 using namespace foundation::exceptions::memory;
 
-std::atomic<ssize_t> Object::objCount = 0;
+std::map<Object*, Object*> Object::objects;
 
 void Object::addWeakReference(
 	void* weakReference
@@ -44,7 +44,7 @@ void Object::removeWeakReference(
 Object::~Object(
 ) {
 	assert(_retainCount == 0);
-	objCount--;
+	objects.insert({{ this, this }});
 	for (size_t idx = 0 ; idx < _weakReferencesCount ; idx++) {
 		((Weak<Object>*)_weakReferences[idx])->_object = nullptr;
 	}
@@ -85,7 +85,7 @@ Object::Object(
 	_weakReferences(nullptr),
 	_weakReferencesSize(0),
 	_weakReferencesCount(0) {
-	objCount++;
+	objects.erase(this);
 }
 
 Object::Object(

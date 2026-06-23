@@ -14,7 +14,7 @@
 #include <windows.h>
 #endif
 
-#include <atomic>
+#include <map>
 
 #include "./allocator.hpp"
 
@@ -45,7 +45,7 @@ namespace foundation::memory {
 
 	public:
 
-		static std::atomic<ssize_t> objCount;
+		static std::map<Object*, Object*> objects;
 
 		virtual ~Object();
 
