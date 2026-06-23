@@ -16,8 +16,6 @@
 using namespace foundation::memory;
 using namespace foundation::exceptions::memory;
 
-std::map<Object*, Object*> Object::objects;
-
 void Object::addWeakReference(
 	void* weakReference
 ) const {
@@ -41,10 +39,14 @@ void Object::removeWeakReference(
 	}
 }
 
+size_t Object::count() {
+	return _objects.size();
+}
+
 Object::~Object(
 ) {
 	assert(_retainCount == 0);
-	objects.insert({{ this, this }});
+	_objects.insert({{ this, this }});
 	for (size_t idx = 0 ; idx < _weakReferencesCount ; idx++) {
 		((Weak<Object>*)_weakReferences[idx])->_object = nullptr;
 	}
@@ -85,7 +87,7 @@ Object::Object(
 	_weakReferences(nullptr),
 	_weakReferencesSize(0),
 	_weakReferencesCount(0) {
-	objects.erase(this);
+	_objects.erase(this);
 }
 
 Object::Object(
@@ -95,3 +97,5 @@ Object::Object(
 Object::Object(
 	Object&&
 ) : Object() { }
+
+std::map<Object*, Object*> Object::_objects;

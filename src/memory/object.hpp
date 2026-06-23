@@ -45,7 +45,7 @@ namespace foundation::memory {
 
 	public:
 
-		static std::map<Object*, Object*> objects;
+		static size_t count() ;
 
 		virtual ~Object();
 
@@ -69,6 +69,10 @@ namespace foundation::memory {
 
 		Object(
 			Object&&);
+
+	private:
+
+		static std::map<Object*, Object*> _objects;
 
 	};
 
