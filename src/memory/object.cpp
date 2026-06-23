@@ -16,6 +16,8 @@
 using namespace foundation::memory;
 using namespace foundation::exceptions::memory;
 
+std::atomic<ssize_t> Object::objCount = 0;
+
 void Object::addWeakReference(
 	void* weakReference
 ) const {
@@ -42,6 +44,7 @@ void Object::removeWeakReference(
 Object::~Object(
 ) {
 	assert(_retainCount == 0);
+	objCount--;
 	for (size_t idx = 0 ; idx < _weakReferencesCount ; idx++) {
 		((Weak<Object>*)_weakReferences[idx])->_object = nullptr;
 	}
@@ -81,7 +84,9 @@ Object::Object(
 ) : _retainCount(0),
 	_weakReferences(nullptr),
 	_weakReferencesSize(0),
-	_weakReferencesCount(0) { }
+	_weakReferencesCount(0) {
+	objCount++;
+}
 
 Object::Object(
 	const Object&

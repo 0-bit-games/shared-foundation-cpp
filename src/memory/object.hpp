@@ -45,6 +45,8 @@ namespace foundation::memory {
 
 	public:
 
+		static std::atomic<ssize_t> objCount;
+
 		virtual ~Object();
 
 		Object& operator=(
