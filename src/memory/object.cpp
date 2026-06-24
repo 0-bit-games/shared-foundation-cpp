@@ -39,14 +39,9 @@ void Object::removeWeakReference(
 	}
 }
 
-size_t Object::count() {
-	return _objects.size();
-}
-
 Object::~Object(
 ) {
 	assert(_retainCount == 0);
-	_objects.insert({{ this, this }});
 	for (size_t idx = 0 ; idx < _weakReferencesCount ; idx++) {
 		((Weak<Object>*)_weakReferences[idx])->_object = nullptr;
 	}
@@ -86,10 +81,7 @@ Object::Object(
 ) : _retainCount(0),
 	_weakReferences(nullptr),
 	_weakReferencesSize(0),
-	_weakReferencesCount(0) {
-	_objects.erase(this);
-	_totalObjects++;
-}
+	_weakReferencesCount(0) { }
 
 Object::Object(
 	const Object&
@@ -98,6 +90,3 @@ Object::Object(
 Object::Object(
 	Object&&
 ) : Object() { }
-
-std::map<Object*, Object*> Object::_objects;
-size_t Object::_totalObjects = 0;
