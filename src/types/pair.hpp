@@ -1,9 +1,8 @@
-
 //
 // pair.hpp
-// foundation
+// 0-bit-games-shared-foundation-cpp
 //
-// Created by Kristian Trenskow on 2021/01/24.
+// Created by Kristian Trenskow on 2021/01/24
 // See license in LICENSE.
 //
 

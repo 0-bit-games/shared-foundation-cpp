@@ -1,8 +1,8 @@
 //
 // thread.hpp
-// foundation
+// 0-bit-games-shared-foundation-cpp
 //
-// Created by Kristian Trenskow on 2025/06/26.
+// Created by Kristian Trenskow on 2025/06/26
 // See license in LICENSE.
 //
 

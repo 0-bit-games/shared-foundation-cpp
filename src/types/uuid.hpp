@@ -1,8 +1,8 @@
 //
 // uuid.hpp
-// foundation
+// 0-bit-games-shared-foundation-cpp
 //
-// Created by Kristian Trenskow on 2022/08/28.
+// Created by Kristian Trenskow on 2025/01/22
 // See license in LICENSE.
 //
 

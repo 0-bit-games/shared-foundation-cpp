@@ -1,8 +1,8 @@
 //
 // comparable.hpp
-// foundation
+// 0-bit-games-shared-foundation-cpp
 //
-// Created by Kristian Trenskow on 2023/01/21.
+// Created by Kristian Trenskow on 2025/01/22
 // See license in LICENSE.
 //
 

@@ -1,8 +1,8 @@
 //
 // allocator.hpp
-// foundation
+// 0-bit-games-shared-foundation-cpp
 //
-// Created by Kristian Trenskow on 2021/07/19.
+// Created by Kristian Trenskow on 2025/01/22
 // See license in LICENSE.
 //
 

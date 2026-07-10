@@ -1,8 +1,8 @@
 //
 // queue.hpp
-// foundation
+// 0-bit-games-shared-foundation-cpp
 //
-// Created by Kristian Trenskow on 2025/06/26.
+// Created by Kristian Trenskow on 2025/06/27
 // See license in LICENSE.
 //
 

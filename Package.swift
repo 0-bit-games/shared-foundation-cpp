@@ -1,8 +1,8 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.3
 
 //
 // Package.swift
-// foundation
+// 0-bit-games-shared-foundation-cpp
 //
 // Created by Kristian Trenskow on 2023/10/07
 // See license in LICENSE.

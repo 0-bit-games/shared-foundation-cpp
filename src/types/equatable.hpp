@@ -1,8 +1,8 @@
 //
 // equatable.hpp
-// foundation
+// 0-bit-games-shared-foundation-cpp
 //
-// Created by Kristian Trenskow on 2026/01/12.
+// Created by Kristian Trenskow on 2026/01/12
 // See license in LICENSE.
 //
 

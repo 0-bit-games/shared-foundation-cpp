@@ -1,8 +1,8 @@
 //
 // type.cpp
-// foundation
+// 0-bit-games-shared-foundation-cpp
 //
-// Created by Kristian Trenskow on 2018/09/10.
+// Created by Kristian Trenskow on 2025/01/23
 // See license in LICENSE.
 //
 
