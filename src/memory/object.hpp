@@ -15,6 +15,7 @@
 #endif
 
 #include <map>
+#include <atomic>
 
 #include "./allocator.hpp"
 
