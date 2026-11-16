@@ -386,19 +386,19 @@ bool Date::greaterThan(
 Date Date::operator+(
 	const Duration& duration
 ) const {
-	return Date(this->seconds() + duration.seconds());
+	return Date(this->_time + duration, this->_timeZone);
 }
 
 Date Date::operator-(
 	const Duration& duration
 ) const{
-	return Date(this->seconds() - duration.seconds());
+	return Date(this->_time - duration, this->_timeZone);
 }
 
 const Duration Date::operator-(
 	const Date& other
 ) const {
-	return this->seconds() - other.seconds();
+	return this->to(TimeZone::utc)._time - other.to(TimeZone::utc)._time;
 }
 
 void Date::operator+=(
