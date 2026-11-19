@@ -17,6 +17,11 @@
 #include "../types/uuid.hpp"
 #include "../system/endian.hpp"
 
+#include <cmath>
+#include <cerrno>
+#include <cstdlib>
+#include <string>
+
 #include "./json.hpp"
 
 using namespace foundation::serialization;
@@ -182,6 +187,7 @@ Strong<Type> JSON::_parseNumber(
 ) {
 
 	size_t consumed = 0;
+	size_t start = *idx;
 
 	double value;
 	try {
@@ -192,7 +198,34 @@ Strong<Type> JSON::_parseNumber(
 		throw JSONMalformedException(*line, *character + exception.characterIndex());
 	}
 
-	if (round(value) == value) {
+	{
+		bool integerOnly = true;
+		for (size_t i = 0 ; i < consumed ; i++) {
+			uint32_t chr = string[start + i];
+			if (chr == '.' || chr == 'e' || chr == 'E') integerOnly = false;
+		}
+		if (integerOnly) {
+			long long exact = string.substring(start, consumed)->mapCString<long long>([](const char* text) {
+				errno = 0;
+				return strtoll(text, nullptr, 10);
+			});
+			if (errno == 0) {
+				return Strong<Integer>((int64_t)exact)
+					.as<Type>();
+			}
+			if (!std::isfinite(value)) {
+				throw JSONMalformedException(*line, *character);
+			}
+			return Strong<Float>(value)
+				.as<Type>();
+		}
+	}
+
+	if (!std::isfinite(value)) {
+		throw JSONMalformedException(*line, *character);
+	}
+
+	if (round(value) == value && value >= -9223372036854775808.0 && value < 9223372036854775808.0) {
 		return Strong<Integer>((int64_t)value)
 			.as<Type>();
 	}
@@ -582,10 +615,16 @@ Strong<String> JSON::_stringify(
 					break;
 				case Numeric::Subtype::floatingPoint: {
 					double value = data.as<Float>().value();
-					uint64_t length = snprintf(nullptr, 0, "%g", value);
-					std::vector<char> str(length + 1);
-					snprintf(str.data(), length + 1, "%g", value);
-					result->append(str.data());
+					if (!std::isfinite(value)) {
+						result->append("null");
+						break;
+					}
+					char str[64];
+					for (int precision = 15 ; precision <= 17 ; precision++) {
+						snprintf(str, sizeof(str), "%.*g", precision, value);
+						if (strtod(str, nullptr) == value) break;
+					}
+					result->append(str);
 					break;
 				}
 			}

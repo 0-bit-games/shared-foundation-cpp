@@ -7,6 +7,7 @@
 //
 
 #include <assert.h>
+#include <new>
 
 #include "../exceptions/exceptions.hpp"
 #include "./weak.hpp"
@@ -14,37 +15,63 @@
 #include "./object.hpp"
 
 using namespace foundation::memory;
+using namespace foundation::parallelism;
 using namespace foundation::exceptions::memory;
+
+Mutex& Object::weakReferencesMutex() {
+	alignas(Mutex) static unsigned char storage[sizeof(Mutex)];
+	static Mutex* mutex = new (storage) Mutex();
+	return *mutex;
+}
 
 void Object::addWeakReference(
 	void* weakReference
 ) const {
-	if (_weakReferencesSize < _weakReferencesCount + 1) {
-		_weakReferencesSize = Allocator::calculateBufferLength(_weakReferencesCount + 1);
-		_weakReferences = (void**)realloc(_weakReferences, _weakReferencesSize);
-		_weakReferences[_weakReferencesCount++] = weakReference;
+
+	if (_weakReferencesCount + 1 > _weakReferencesSize) {
+
+		size_t size = Allocator::calculateBufferLength(_weakReferencesCount + 1);
+
+		void** buffer = (void**)realloc(_weakReferences, size * sizeof(void*));
+
+		if (buffer == nullptr) {
+			throw AllocationException(size * sizeof(void*));
+		}
+
+		_weakReferences = buffer;
+		_weakReferencesSize = size;
+
 	}
+
+	_weakReferences[_weakReferencesCount++] = weakReference;
+
 }
 
 void Object::removeWeakReference(
 	void* weakReference
 ) const {
+
 	for (size_t idx = 0 ; idx < _weakReferencesCount ; idx++) {
 		if (_weakReferences[idx] == weakReference) {
-			for (size_t midx = idx ; midx <= _weakReferencesCount - 1 ; midx++) {
-				_weakReferences[midx] = _weakReferences[midx + 1];
+			for (size_t midx = idx + 1 ; midx < _weakReferencesCount ; midx++) {
+				_weakReferences[midx - 1] = _weakReferences[midx];
 			}
 			_weakReferencesCount--;
+			break;
 		}
 	}
+
 }
 
 Object::~Object(
 ) {
 	assert(_retainCount == 0);
-	for (size_t idx = 0 ; idx < _weakReferencesCount ; idx++) {
-		((Weak<Object>*)_weakReferences[idx])->_object = nullptr;
-	}
+	weakReferencesMutex().locked([&]() {
+		for (size_t idx = 0 ; idx < _weakReferencesCount ; idx++) {
+			((Weak<Object>*)_weakReferences[idx])->_object = nullptr;
+		}
+		_weakReferencesCount = 0;
+	});
 	if (_weakReferences != nullptr) {
 		free(_weakReferences);
 	}

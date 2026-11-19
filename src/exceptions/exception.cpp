@@ -116,6 +116,34 @@ size_t memory::AllocationException::size() const {
 	return this->_size;
 }
 
+const char* memory::NonCopyableObjectException::description() const {
+	return "A non-copyable object must be allocated by `Strong` itself (or already be retained).";
+}
+
+memory::NonCopyableObjectException* memory::NonCopyableObjectException::clone() const {
+	return new NonCopyableObjectException();
+}
+
+parallelism::ThreadCreationException::ThreadCreationException(
+	int errorNumber
+) : _errorNumber(errorNumber) { }
+
+parallelism::ThreadCreationException::ThreadCreationException(
+	const ThreadCreationException& other
+) : _errorNumber(other._errorNumber) { }
+
+const char* parallelism::ThreadCreationException::description() const {
+	return "Could not create thread.";
+}
+
+parallelism::ThreadCreationException* parallelism::ThreadCreationException::clone() const {
+	return new ThreadCreationException(this->_errorNumber);
+}
+
+int parallelism::ThreadCreationException::errorNumber() const {
+	return this->_errorNumber;
+}
+
 types::TypeConversionException::TypeConversionException() { }
 
 const char* types::TypeConversionException::description() const {

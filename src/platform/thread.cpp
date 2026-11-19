@@ -6,6 +6,14 @@
 // See license in LICENSE.
 //
 
+#include <errno.h>
+#include <memory>
+
+#if defined(__linux__)
+#include <sys/syscall.h>
+#include <unistd.h>
+#endif
+
 #include "./thread.hpp"
 
 #if defined(_WIN32)
@@ -34,7 +42,7 @@ void PlatformMutex_Destroy(
 	DeleteCriticalSection(mutex);
 }
 
-void PlatformThread_Create(
+int PlatformThread_Create(
 	PlatformThread* thread,
 	std::function<void()>* function
 ) {
@@ -42,7 +50,7 @@ void PlatformThread_Create(
 		nullptr,
 		0,
 		[](void* arg) -> unsigned {
-			auto func = static_cast<std::function<void()>*>(arg);
+			std::unique_ptr<std::function<void()>> func(static_cast<std::function<void()>*>(arg));
 			(*func)();
 			return 0;
 		},
@@ -50,6 +58,14 @@ void PlatformThread_Create(
 		0,
 		nullptr
 	);
+	if (*thread == nullptr) {
+		return errno != 0 ? errno : EAGAIN;
+	}
+	return 0;
+}
+
+PlatformThreadId PlatformThread_CurrentId() {
+	return (PlatformThreadId)GetCurrentThreadId();
 }
 
 void PlatformThread_SetName(
@@ -62,6 +78,12 @@ void PlatformThread_Join(
 	PlatformThread thread
 ) {
 	WaitForSingleObject(thread, INFINITE);
+	CloseHandle(thread);
+}
+
+void PlatformThread_Detach(
+	PlatformThread thread
+) {
 	CloseHandle(thread);
 }
 
@@ -122,15 +144,27 @@ void PlatformMutex_Destroy(
 	pthread_mutex_destroy(mutex);
 }
 
-void PlatformThread_Create(
+int PlatformThread_Create(
 	PlatformThread* thread,
 	std::function<void()>* function
 ) {
-	pthread_create(thread, nullptr, [](void* arg) -> void* {
-		auto func = static_cast<std::function<void()>*>(arg);
+	return pthread_create(thread, nullptr, [](void* arg) -> void* {
+		std::unique_ptr<std::function<void()>> func(static_cast<std::function<void()>*>(arg));
 		(*func)();
 		return nullptr;
 	}, function);
+}
+
+PlatformThreadId PlatformThread_CurrentId() {
+#if defined(__APPLE__)
+	uint64_t id = 0;
+	pthread_threadid_np(nullptr, &id);
+	return (PlatformThreadId)id;
+#elif defined(__linux__)
+	return (PlatformThreadId)syscall(SYS_gettid);
+#else
+	return (PlatformThreadId)(uintptr_t)pthread_self();
+#endif
 }
 
 void PlatformThread_SetName(
@@ -147,6 +181,12 @@ void PlatformThread_Join(
 	PlatformThread thread
 ) {
 	pthread_join(thread, nullptr);
+}
+
+void PlatformThread_Detach(
+	PlatformThread thread
+) {
+	pthread_detach(thread);
 }
 
 void PlatformCondition_Init(

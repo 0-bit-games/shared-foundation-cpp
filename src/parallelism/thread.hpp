@@ -34,10 +34,14 @@ namespace foundation::parallelism {
 
 			virtual ~Thread();
 
+			void detach();
+
+			static uint64_t currentId();
+
 		private:
 
 			PlatformThread _thread;
-			std::function<void()> _function;
+			bool _detached;
 
 	};
 

@@ -9,6 +9,7 @@
 #ifndef foundation_platform_thread_hpp
 #define foundation_platform_thread_hpp
 
+#include <stdint.h>
 #include <functional>
 
 #if defined(_WIN32)
@@ -44,14 +45,21 @@ void PlatformMutex_Unlock(
 void PlatformMutex_Destroy(
 	PlatformMutex* mutex);
 
-void PlatformThread_Create(
+int PlatformThread_Create(
 	PlatformThread* thread,
 	std::function<void()>* function);
+
+typedef uint64_t PlatformThreadId;
+
+PlatformThreadId PlatformThread_CurrentId();
 
 void PlatformThread_SetName(
 	const char* name);
 
 void PlatformThread_Join(
+	PlatformThread thread);
+
+void PlatformThread_Detach(
 	PlatformThread thread);
 
 void PlatformCondition_Init(

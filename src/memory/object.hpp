@@ -17,7 +17,11 @@
 #include <map>
 #include <atomic>
 
+#include "../parallelism/mutex.hpp"
+
 #include "./allocator.hpp"
+
+using namespace foundation::parallelism;
 
 namespace foundation::memory {
 
@@ -39,6 +43,8 @@ namespace foundation::memory {
 		mutable void** _weakReferences;
 		mutable size_t _weakReferencesSize;
 		mutable size_t _weakReferencesCount;
+
+		static Mutex& weakReferencesMutex();
 
 		void addWeakReference(void* weakReference) const;
 

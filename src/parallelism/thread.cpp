@@ -12,6 +12,8 @@
 
 #include "./thread.hpp"
 
+#include "../exceptions/exceptions.hpp"
+
 using namespace foundation::parallelism;
 using namespace foundation::types;
 
@@ -19,20 +21,41 @@ Thread::Thread(
 	const String name,
 	std::function<void()> function
 ) : foundation::memory::Object(),
-    _function([=]() {
-    	name.withCString([&](const char* cString) {
-    		PlatformThread_SetName(cString);
-    	});
-    	function();
-    }) {
-	
-	PlatformThread_Create(
-		&this->_thread, 
-		&this->_function);
+    _thread(),
+    _detached(false) {
+
+	std::function<void()>* threadFunction = new std::function<void()>([=]() {
+		name.withCString([&](const char* cString) {
+			PlatformThread_SetName(cString);
+		});
+		function();
+	});
+
+	int error = PlatformThread_Create(
+		&this->_thread,
+		threadFunction);
+
+	if (error != 0) {
+
+		delete threadFunction;
+
+		throw foundation::exceptions::parallelism::ThreadCreationException(error);
+	}
 
 }
 
+uint64_t Thread::currentId() {
+	return (uint64_t)PlatformThread_CurrentId();
+}
+
+void Thread::detach() {
+	if (this->_detached) return;
+	this->_detached = true;
+	PlatformThread_Detach(this->_thread);
+}
+
 Thread::~Thread() {
-	PlatformThread_Join(this->_thread);
-	this->_function = nullptr;
+	if (!this->_detached) {
+		PlatformThread_Join(this->_thread);
+	}
 }

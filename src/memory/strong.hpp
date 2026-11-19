@@ -14,6 +14,8 @@
 #include <type_traits>
 #include <functional>
 
+#include "../exceptions/exceptions.hpp"
+
 #include "./allocator.hpp"
 #include "./object.hpp"
 
@@ -33,27 +35,28 @@ namespace foundation::memory {
 
 		void _setObject(T* object, bool newObject = false) {
 
-			T* oldObject = _object;
-
-			_object = nullptr;
+			T* newObject_ = nullptr;
 
 			if (object) {
 				// If object is allocated on the stack, we make a copy on the heap.
 				if (!newObject && object->retainCount() == 0) {
 					if constexpr (is_copy_constructible<T>::value) {
-						_object = new T(*object);
+						newObject_ = new T(*object);
 					} else {
-						assert(false);
+						throw foundation::exceptions::memory::NonCopyableObjectException();
 					}
 				} else {
-					_object = object;
+					newObject_ = object;
 				}
-				_object->retain();
+				newObject_->retain();
 			}
+
+			T* oldObject = _object;
+
+			_object = newObject_;
 
 			if (oldObject != nullptr) {
 				oldObject->release();
-				oldObject = nullptr;
 			}
 
 		}

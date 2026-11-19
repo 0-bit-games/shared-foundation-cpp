@@ -59,11 +59,12 @@ namespace foundation::tools {
 				if (this->_length + 1 > this->_capacity) {
 
 					size_t newCapacity = Allocator::calculateBufferLength(this->_capacity + 1);
-					T* newData = (T*)calloc(this->_capacity + 1, sizeof(T));
+					T* newData = (T*)calloc(newCapacity, sizeof(T));
 
 					for (size_t idx = 0 ; idx < this->_length ; idx++) {
-						new (&newData[idx]) T(
-							this->_data[(this->_head + idx) % this->_capacity]);
+						T& old = this->_data[(this->_head + idx) % this->_capacity];
+						new (&newData[idx]) T(old);
+						old.~T();
 					}
 
 					free(this->_data);

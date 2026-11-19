@@ -12,6 +12,8 @@
 #include <type_traits>
 #include <atomic>
 
+#include "../parallelism/mutex.hpp"
+
 #include "./allocator.hpp"
 
 namespace foundation::memory {
@@ -27,17 +29,46 @@ namespace foundation::memory {
 
 		friend class Object;
 
+		template<typename U>
+		friend class Weak;
+
 	private:
 		std::atomic<T*> _object;
 
-		void _setObject(T* object) {
-			if (_object != nullptr) {
-				_object.load()->removeWeakReference(this);
+		void _setObjectLocked(T* object) {
+
+			if (object != nullptr) {
+				object->addWeakReference(this);
 			}
+
+			T* previous = _object.load();
+
 			_object = object;
-			if (_object) {
-				_object.load()->addWeakReference(this);
+
+			if (previous != nullptr) {
+				previous->removeWeakReference(this);
 			}
+
+		}
+
+		void _setObject(T* object) {
+			T::weakReferencesMutex().locked([&]() {
+				_setObjectLocked(object);
+			});
+		}
+
+		void _copyFrom(const Weak<T>& other) {
+			T::weakReferencesMutex().locked([&]() {
+				_setObjectLocked(other._object.load());
+			});
+		}
+
+		void _moveFrom(Weak<T>& other) {
+			T::weakReferencesMutex().locked([&]() {
+				T* object = other._object.load();
+				_setObjectLocked(object);
+				other._setObjectLocked(nullptr);
+			});
 		}
 
 	public:
@@ -65,15 +96,27 @@ namespace foundation::memory {
 
 		}
 
-		Weak(const Strong<T>& other) : Weak(*other) {
+		Weak(const Strong<T>& other) : _object(nullptr) {
+
 			static_assert(std::is_base_of<Object, T>::value);
+
+			_setObject(other.operator T*());
+
 		}
 
-		Weak(Weak<T>&& other) : _object(other._object) {
+		Weak(const Weak<T>& other) : _object(nullptr) {
 
 			static_assert(std::is_base_of<Object, T>::value);
 
-			other._object = nullptr;
+			_copyFrom(other);
+
+		}
+
+		Weak(Weak<T>&& other) : _object(nullptr) {
+
+			static_assert(std::is_base_of<Object, T>::value);
+
+			_moveFrom(other);
 
 		}
 
@@ -98,9 +141,15 @@ namespace foundation::memory {
 			return *this;
 		}
 
-		Weak<T>& operator =(T&& other) {
-			_setObject(other._object);
-			other._setObject(nullptr);
+		Weak<T>& operator =(const Weak<T>& other) {
+			if (this == &other) return *this;
+			_copyFrom(other);
+			return *this;
+		}
+
+		Weak<T>& operator =(Weak<T>&& other) {
+			if (this == &other) return *this;
+			_moveFrom(other);
 			return *this;
 		}
 
@@ -109,8 +158,8 @@ namespace foundation::memory {
 			return *this;
 		}
 
-		Weak<T>& operator =(Strong<T> object) {
-			_setObject(object);
+		Weak<T>& operator =(const Strong<T>& object) {
+			_setObject(object.operator T*());
 			return *this;
 		}
 
@@ -127,7 +176,11 @@ namespace foundation::memory {
 
 		template<typename O>
 		Weak<O> as() const {
-			return Weak<O>((O*)_object.load());
+			Weak<O> result;
+			T::weakReferencesMutex().locked([&]() {
+				result._setObjectLocked((O*)_object.load());
+			});
+			return result;
 		}
 
 	};

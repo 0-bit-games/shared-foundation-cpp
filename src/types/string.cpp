@@ -8,6 +8,8 @@
 
 #include "string.hpp"
 
+#include <cstdlib>
+
 using namespace foundation::types;
 
 Type::Kind String::typeKind() {
@@ -77,24 +79,26 @@ String String::format(
 	va_list args;
 
 	va_start(args, format);
+	va_list copy;
+	va_copy(copy, args);
 
-	size_t size = vsnprintf(nullptr, 0, format, args) + 1;
-
-	va_end(args);
-
-	va_start(args, format);
-
-	char* buffer = (char*)malloc(size);
-
-	vsnprintf(buffer, size, format, args);
+	int length = vsnprintf(nullptr, 0, format, args);
 
 	va_end(args);
 
-	String result((const char*)buffer);
+	if (length < 0) {
+		va_end(copy);
+		throw EncoderException(0);
+	}
 
-	free(buffer);
+	Data<char> buffer = Data<char>::fromCBuffer([&](char* items, size_t count) {
+		vsnprintf(items, count, format, copy);
+		return count;
+	}, (size_t)length + 1);
 
-	return result;
+	va_end(copy);
+
+	return String((const char*)buffer.items());
 
 }
 
@@ -252,22 +256,17 @@ double String::doubleValue(
 	bool allowLeadingZero
 ) const noexcept(false) {
 
-	double integerMultiplier = 1;
 	bool integerMultiplierParsed = false;
 	bool integerHadLeadingZero = false;
 	bool integerHadDigits = false;
 	size_t integerStartIndex = NotFound;
-	double fractionMultiplier = 10;
 	bool fractionHadDigits = false;
 	size_t fractionStartIndex = NotFound;
-	double exponentMultiplier = 1;
 	bool exponentMultiplierParsed = false;
 	bool exponentHadDigits = false;
 	size_t exponentStartIndex = NotFound;
 
 	double integer = 0;
-	double fraction = 0;
-	double exponent = 0;
 
 	size_t idx = startIndex;
 	while (idx < length()) {
@@ -282,12 +281,10 @@ double String::doubleValue(
 
 			if (exponentStartIndex != NotFound) {
 				if (exponentHadDigits) throw DecoderException(idx);
-				exponentMultiplier = chr == '+' ? 1 : -1;
 				exponentMultiplierParsed = true;
 			}
 			else {
 				if (integerHadDigits) throw DecoderException(idx);
-				integerMultiplier = chr == '+' ? 1 : -1;
 				integerMultiplierParsed = true;
 			}
 
@@ -313,15 +310,8 @@ double String::doubleValue(
 				integerHadLeadingZero = chr == '0';
 			}
 
-			double value = chr - '0';
-
-			if (exponentStartIndex != NotFound) {
-				exponent = exponent * 10 + value;
-			} else if (fractionStartIndex != NotFound) {
-				fraction = fraction + (value / fractionMultiplier);
-				fractionMultiplier *= 10;
-			} else {
-				integer = integer * 10 + value;
+			if (exponentStartIndex == NotFound && fractionStartIndex == NotFound) {
+				integer = integer * 10 + (chr - '0');
 			}
 
 		} else {
@@ -338,7 +328,9 @@ double String::doubleValue(
 	if (fractionStartIndex != NotFound && !fractionHadDigits) throw DecoderException(fractionStartIndex);
 	if (!integerHadDigits) throw DecoderException(startIndex);
 
-	double result = ((integer * integerMultiplier) + fraction) * (pow(10, exponent) * exponentMultiplier);
+	double result = this->substring(startIndex, idx - startIndex)->mapCString<double>([](const char* text) {
+		return strtod(text, nullptr);
+	});
 
 	if (!allowLeadingZero && integer != 0 && integerHadLeadingZero) throw DecoderException(integerStartIndex);
 
@@ -490,39 +482,42 @@ Data<uint32_t> String::_decodeUTF8(
 	size_t length
 ) noexcept(false) {
 
-	size_t offset = 0;
-
 	if (length > 2 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF) {
-		offset += 3;
+		buffer += 3;
+		length -= 3;
 	}
 
 	Data<uint32_t> ret;
 
-	for (size_t idx = offset ; idx < length ; idx++) {
+	for (size_t idx = 0 ; idx < length ; idx++) {
 
 		const uint8_t firstByte = buffer[0];
 		uint32_t codePoint = 0;
 		uint8_t charWidth = 1;
+		uint32_t minimum = 0;
 
 		buffer++;
 
 		if ((firstByte & 0x80) == 0) {
 			codePoint = firstByte & 0x7F;
-		} else if ((firstByte & 0xE0) == 0xC0) {
+		} else if (firstByte >= 0xC2 && firstByte <= 0xDF) {
 			charWidth = 2;
 			codePoint = firstByte & 0x1F;
+			minimum = 0x80;
 		} else if ((firstByte & 0xF0) == 0xE0) {
 			charWidth = 3;
 			codePoint = firstByte & 0x0F;
-		} else if ((firstByte & 0xF8) == 0xF0) {
+			minimum = 0x800;
+		} else if (firstByte >= 0xF0 && firstByte <= 0xF4) {
 			charWidth = 4;
 			codePoint = firstByte & 0x07;
+			minimum = 0x10000;
 		} else { // Malformed.
 			throw DecoderException(idx);
 		}
 
 		// Malformed.
-		if (length < charWidth) {
+		if (length - idx < charWidth) {
 			throw DecoderException(idx);
 		}
 
@@ -535,6 +530,10 @@ Data<uint32_t> String::_decodeUTF8(
 			}
 			buffer++;
 			idx++;
+		}
+
+		if (codePoint < minimum || (codePoint >= 0xD800 && codePoint <= 0xDFFF) || codePoint > 0x10FFFF) {
+			throw DecoderException(idx);
 		}
 
 		ret.append(codePoint);
@@ -557,6 +556,11 @@ Data<uint8_t> String::_encodeUTF8(
 		uint8_t chr[4];
 
 		uint32_t codePoint = buffer[idx];
+
+		if (codePoint > 0x10FFFF || (codePoint >= 0xD800 && codePoint <= 0xDFFF)) {
+			throw EncoderException(idx);
+		}
+
 		if (codePoint < 0x80) {
 			ret.append((uint8_t)codePoint);
 		} else if (codePoint < 0x800) {
@@ -568,7 +572,7 @@ Data<uint8_t> String::_encodeUTF8(
 			chr[1] = (uint8_t)(0x80 | ((codePoint >> 6) & 0x3F));
 			chr[2] = (uint8_t)(0x80 | (codePoint & 0x3F));
 			ret.append(chr, 3);
-		} else if (codePoint <= 0x1FFFFF) {
+		} else {
 			chr[0] = (uint8_t)(0xF0 | (codePoint >> 18));
 			chr[1] = (uint8_t)(0x80 | ((codePoint >> 12) & 0x3F));
 			chr[2] = (uint8_t)(0x80 | ((codePoint >> 6) & 0x3F));
@@ -594,18 +598,28 @@ Data<uint32_t> String::_decodeUTF16(
 
 	for (size_t idx = 0 ; idx < length ; idx++) {
 
-		uint16_t high = Endian::toSystemVariant(buffer[idx], endian);
+		uint16_t unit = Endian::toSystemVariant(buffer[idx], endian);
 
-		if (!(high >= 0xD800 && high <= 0xD8FF) || idx + 1 == length) ret.append(high);
-		else {
+		if (unit >= 0xD800 && unit <= 0xDBFF) {
 
-			uint16_t low = Endian::toSystemVariant(buffer[idx + 1], endian);
+			if (idx + 1 < length) {
 
-			if (low >= 0xDC00 && low <= 0xDFFF) {
-				ret.append((((high & 0x3FF) << 10) | (low & 0x3FF)) + 0x10000);
-				idx++;
+				uint16_t low = Endian::toSystemVariant(buffer[idx + 1], endian);
+
+				if (low >= 0xDC00 && low <= 0xDFFF) {
+					ret.append((((uint32_t)(unit & 0x3FF) << 10) | (low & 0x3FF)) + 0x10000);
+					idx++;
+					continue;
+				}
+
 			}
 
+			ret.append(0xFFFD);
+
+		} else if (unit >= 0xDC00 && unit <= 0xDFFF) {
+			ret.append(0xFFFD);
+		} else {
+			ret.append(unit);
 		}
 
 	}
@@ -629,6 +643,10 @@ Data<uint16_t> String::_encodeUTF16(
 	for (size_t idx = 0 ; idx < buffer.length() ; idx++) {
 
 		uint32_t chr = buffer[idx];
+
+		if (chr > 0x10FFFF || (chr >= 0xD800 && chr <= 0xDFFF)) {
+			throw EncoderException(idx);
+		}
 
 		if (chr <= 0xFFFF) ret.append(Endian::fromSystemVariant((uint16_t)chr, endian));
 		else {
@@ -665,7 +683,7 @@ uint8_t String::_valueFromHex(
 	uint8_t chr,
 	size_t idx
 ) noexcept(false) {
-	if (chr >= 'a' && chr <= 'f') return chr - ('a' - 'A');
+	if (chr >= 'a' && chr <= 'f') return (chr - 'a') + 10;
 	if (chr >= 'A' && chr <= 'F') return (chr - 'A') + 10;
 	else if (chr >= '0' && chr <= '9') return chr - '0';
 	else throw DecoderException(idx);

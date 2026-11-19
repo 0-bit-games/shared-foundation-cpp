@@ -168,6 +168,47 @@ namespace foundation::exceptions {
 
 		};
 
+		class NonCopyableObjectException : public Exception {
+
+		public:
+
+			NonCopyableObjectException() = default;
+
+			virtual ~NonCopyableObjectException() = default;
+
+			virtual const char* description() const override;
+
+			virtual NonCopyableObjectException* clone() const override;
+
+		};
+
+	}
+
+	namespace parallelism {
+
+		class ThreadCreationException : public Exception {
+
+		private:
+			int _errorNumber;
+
+		public:
+
+			ThreadCreationException(
+				int errorNumber);
+
+			ThreadCreationException(
+				const ThreadCreationException& other);
+
+			virtual ~ThreadCreationException() = default;
+
+			virtual const char* description() const override;
+
+			virtual ThreadCreationException* clone() const override;
+
+			int errorNumber() const;
+
+		};
+
 	}
 
 	namespace types {
