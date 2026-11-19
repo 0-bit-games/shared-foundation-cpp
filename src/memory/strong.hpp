@@ -119,7 +119,10 @@ namespace foundation::memory {
 
 		}
 
-		template<typename... Args>
+		template<
+			typename... Args,
+			typename = std::enable_if_t<
+				!(sizeof...(Args) == 1 && (std::is_same_v<std::decay_t<Args>, Strong<T>> && ...))>>
 		explicit Strong(Args&&... args) : _object(nullptr) {
 
 			static_assert(is_base_of<Object, T>::value);
